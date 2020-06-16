@@ -8,7 +8,21 @@ from codebase.utils.api import AsyncApi
 hydry_api = AsyncApi(url_prefix=settings.HYDRA_ADMIN_URL)
 
 
-class LoginHandler(tornado.web.RequestHandler):
+class BaseHandler(tornado.web.RequestHandler):
+
+    @property
+    def request_uri(self):
+        """返回合适的 URI
+
+        1. 如果设置了URI前缀（部署时指定），则绑定该前缀
+        2. 如果无URI前缀，则使用 request.path 即可
+        """
+        if settings.PUBLIC_URL_PREFIX:
+            return settings.PUBLIC_URL_PREFIX + self.request.path
+        return self.request.path
+
+
+class LoginHandler(BaseHandler):
 
     async def get(self):
 
@@ -52,7 +66,7 @@ class LoginHandler(tornado.web.RequestHandler):
         self.redirect(url)
 
 
-class ConsentHandler(tornado.web.RequestHandler):
+class ConsentHandler(BaseHandler):
 
     async def get(self):
 

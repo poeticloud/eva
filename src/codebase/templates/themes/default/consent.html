@@ -8,7 +8,7 @@
   <h1>Hydra Consent</h1>
   <div>{{ text }}</div>
   <h2>requested_scope is</h2>
-  <form action="{{ request.path }}" method="POST">
+  <form action="{{ handler.request_uri }}" method="POST">
     <input type="hidden" name="challenge" value="{{ challenge }}">
     {% for item in requested_scope %}
     <input type="checkbox" name="grant_scope" value="{{ escape(item) }}"> {{ escape(item) }}
