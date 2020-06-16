@@ -1,0 +1,13 @@
+version: '3'
+services:
+
+  postgres:
+    image: postgres:12
+    environment:
+      POSTGRES_DB: eva
+      POSTGRES_USER: eva
+      POSTGRES_PASSWORD: eva
+    ports:
+      - "5433:5432"
+    volumes:
+      - "/tmp/eva/pg-data:/var/lib/postgresql"

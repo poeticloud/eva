@@ -14,6 +14,7 @@ class Application(tornado.web.Application):
             "gzip": True,
             "debug": settings.getbool("DEBUG"),
             "secret_key": settings.SECRET_KEY,
+            "template_path": settings.TEMPLATE_PATH,
         }
 
         tornado.web.Application.__init__(self, HANDLERS, **tornado_settings)

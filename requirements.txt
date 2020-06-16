@@ -1,0 +1,9 @@
+cryptography==2.6.1
+pyjwt==1.7.1
+tornado==6.0.4
+sqlalchemy==1.3.16
+sqlalchemy-utils==0.36.3
+# database drivers
+psycopg2==2.8.5
+pg8000==1.15.1
+argon2-cffi==19.2.0
