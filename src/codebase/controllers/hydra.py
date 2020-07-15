@@ -32,7 +32,7 @@ class LoginHandler(BaseHandler):
         text = resp
         print(text)
 
-        url = "https://c74.v5tkbpmby.dap.cnegroup.com/auth/#/login"
+        url = f"https://c74.v5tkbpmby.dap.cnegroup.com/auth/?challenge={challenge}#/login"
         self.redirect(url)
         # items = ["Item 1", "Item 2", "Item 3"]
         # self.render(
@@ -43,15 +43,16 @@ class LoginHandler(BaseHandler):
         #     text=text)
 
     async def post(self):
-        challenge = self.get_body_argument("challenge")
+        body = self.get_body_json()
+        challenge = body["challenge"]
         resp = await hydry_api.get("/oauth2/auth/requests/login", query_params={
             "login_challenge": challenge})
         print(f"{resp=}")
 
         print(f"{self.request.body=}")
 
-        username = self.get_body_argument("username")
-        password = self.get_body_argument("password")
+        username = body["username"]
+        password = body["password"]
         print(f"{challenge=}")
         print(f"{username=}")
         print(f"{password=}")
@@ -78,7 +79,7 @@ class ConsentHandler(BaseHandler):
             "consent_challenge": challenge})
         print(f"{resp=}")
 
-        url = "https://c74.v5tkbpmby.dap.cnegroup.com/auth/#/consent"
+        url = "https://c74.v5tkbpmby.dap.cnegroup.com/auth/?challenge={challenge}#/consent"
         self.redirect(url)
         # self.render(
         #     "consent.html",
@@ -88,14 +89,15 @@ class ConsentHandler(BaseHandler):
         #     text=resp)
 
     async def post(self):
-        challenge = self.get_argument("challenge")
+        body = self.get_body_json()
+        challenge = body["challenge"]
         resp = await hydry_api.get("/oauth2/auth/requests/consent", query_params={
             "consent_challenge": challenge})
         print(f"{resp=}")
 
         print(f"{self.request.body=}")
 
-        grant_scope = self.get_body_arguments("grant_scope")
+        grant_scope = body.get("grant_scope")
         print(f"{challenge=}")
         print(f"{grant_scope=}")
 
