@@ -84,7 +84,7 @@ class ConsentHandler(BaseHandler):
             "consent_challenge": challenge})
         print(f"{resp=}")
 
-        url = "https://c74.v5tkbpmby.dap.cnegroup.com/auth/?challenge={challenge}#/consent"
+        url = f"https://c74.v5tkbpmby.dap.cnegroup.com/auth/?challenge={challenge}#/consent"
         self.redirect(url)
         # self.render(
         #     "consent.html",
