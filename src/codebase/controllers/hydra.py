@@ -1,6 +1,6 @@
 # pylint: disable=W0221,W0223
 
-import tornado.web
+from codebase.web import APIRequestHandler
 
 from haomo.conf import settings
 from codebase.utils.api import AsyncApi
@@ -8,7 +8,7 @@ from codebase.utils.api import AsyncApi
 hydry_api = AsyncApi(url_prefix=settings.HYDRA_ADMIN_URL)
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(APIRequestHandler):
 
     @property
     def request_uri(self):
@@ -65,7 +65,7 @@ class LoginHandler(BaseHandler):
             })
         print(f"{resp=}")
 
-        url = resp["redirect_to"]
+        url = resp.get("redirect_to")
         self.success(redirect_to=url)
         # self.redirect(url)
 
@@ -109,6 +109,6 @@ class ConsentHandler(BaseHandler):
         })
         print(f"{resp=}")
 
-        url = resp["redirect_to"]
+        url = resp.get("redirect_to")
         self.success(redirect_to=url)
         # self.redirect(url)
