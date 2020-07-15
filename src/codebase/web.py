@@ -37,7 +37,7 @@ class APIRequestHandler(MainBaseHandler):
     def fail(self, error="fail", errors=None, status=400, **kwargs):
         self.set_status(status)
         self.set_header("Content-Type", "application/json; charset=utf-8")
-        d = {"status": error}
+        d = {"code": error}
         if kwargs:
             d.update(kwargs)
         if errors:
@@ -45,7 +45,7 @@ class APIRequestHandler(MainBaseHandler):
         self.write(json.dumps(d))
 
     def success(self, **kwargs):
-        d = {"status": "success"}
+        d = {"code": "success"}
         d.update(kwargs)
         self.set_header("Content-Type", "application/json; charset=utf-8")
         self.write(json.dumps(d))

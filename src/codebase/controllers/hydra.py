@@ -44,6 +44,11 @@ class LoginHandler(BaseHandler):
 
     async def post(self):
         body = self.get_body_json()
+
+        if "challenge" not in body:
+            self.fail("no challenge")
+            return
+
         challenge = body["challenge"]
         resp = await hydry_api.get("/oauth2/auth/requests/login", query_params={
             "login_challenge": challenge})
@@ -51,8 +56,8 @@ class LoginHandler(BaseHandler):
 
         print(f"{self.request.body=}")
 
-        username = body["username"]
-        password = body["password"]
+        username = body.get("username")
+        password = body.get("password")
         print(f"{challenge=}")
         print(f"{username=}")
         print(f"{password=}")
@@ -90,7 +95,12 @@ class ConsentHandler(BaseHandler):
 
     async def post(self):
         body = self.get_body_json()
-        challenge = body["challenge"]
+
+        challenge = body.get("challenge")
+        if not challenge:
+            self.fail("no challenge")
+            return
+
         resp = await hydry_api.get("/oauth2/auth/requests/consent", query_params={
             "consent_challenge": challenge})
         print(f"{resp=}")
