@@ -32,13 +32,15 @@ class LoginHandler(BaseHandler):
         text = resp
         print(text)
 
-        items = ["Item 1", "Item 2", "Item 3"]
-        self.render(
-            "login.html",
-            challenge=challenge,
-            title="My title",
-            items=items,
-            text=text)
+        url = "https://c74.v5tkbpmby.dap.cnegroup.com/auth/#/login"
+        self.redirect(url)
+        # items = ["Item 1", "Item 2", "Item 3"]
+        # self.render(
+        #     "login.html",
+        #     challenge=challenge,
+        #     title="My title",
+        #     items=items,
+        #     text=text)
 
     async def post(self):
         challenge = self.get_body_argument("challenge")
@@ -63,7 +65,8 @@ class LoginHandler(BaseHandler):
         print(f"{resp=}")
 
         url = resp["redirect_to"]
-        self.redirect(url)
+        self.success(redirect_to=url)
+        # self.redirect(url)
 
 
 class ConsentHandler(BaseHandler):
@@ -75,12 +78,14 @@ class ConsentHandler(BaseHandler):
             "consent_challenge": challenge})
         print(f"{resp=}")
 
-        self.render(
-            "consent.html",
-            title="Hydra Consent",
-            requested_scope=resp["requested_scope"],
-            challenge=challenge,
-            text=resp)
+        url = "https://c74.v5tkbpmby.dap.cnegroup.com/auth/#/consent"
+        self.redirect(url)
+        # self.render(
+        #     "consent.html",
+        #     title="Hydra Consent",
+        #     requested_scope=resp["requested_scope"],
+        #     challenge=challenge,
+        #     text=resp)
 
     async def post(self):
         challenge = self.get_argument("challenge")
@@ -103,4 +108,5 @@ class ConsentHandler(BaseHandler):
         print(f"{resp=}")
 
         url = resp["redirect_to"]
-        self.redirect(url)
+        self.success(redirect_to=url)
+        # self.redirect(url)
