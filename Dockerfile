@@ -14,5 +14,5 @@ WORKDIR /work
 
 EXPOSE 3000
 
-CMD ["python3", "server.py"]
+CMD ["python3", "-u", "server.py"]
 # test
