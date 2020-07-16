@@ -1,7 +1,5 @@
 # pylint: disable=W0221,W0223
 
-import logging
-
 from codebase.web import APIRequestHandler
 
 from haomo.conf import settings
@@ -34,7 +32,7 @@ class LoginHandler(BaseHandler):
         text = resp
         print(text)
 
-        url = f"https://c74.v5tkbpmby.dap.cnegroup.com/auth/?challenge={challenge}#/login"
+        url = f"https://c74.v5tkbpmby.dap.cnegroup.com/auth/#/login?challenge={challenge}"
         self.redirect(url)
         # items = ["Item 1", "Item 2", "Item 3"]
         # self.render(
@@ -86,7 +84,7 @@ class ConsentHandler(BaseHandler):
             "consent_challenge": challenge})
         print(f"{resp=}")
 
-        url = f"https://c74.v5tkbpmby.dap.cnegroup.com/auth/?challenge={challenge}#/consent"
+        url = f"https://c74.v5tkbpmby.dap.cnegroup.com/auth/#/consent?challenge={challenge}"
         self.redirect(url)
         # self.render(
         #     "consent.html",
@@ -96,7 +94,6 @@ class ConsentHandler(BaseHandler):
         #     text=resp)
 
     async def post(self):
-        self.show_debug()
         body = self.get_body_json()
 
         challenge = body.get("challenge")
@@ -113,7 +110,6 @@ class ConsentHandler(BaseHandler):
         grant_scope = body.get("grant_scope")
         print(f"{challenge=}")
         print(f"{grant_scope=}")
-        logging.warning("grant_scope = %s", grant_scope)
 
         resp = await hydry_api.put("/oauth2/auth/requests/consent/accept", query_params={
             "consent_challenge": challenge}, body={
