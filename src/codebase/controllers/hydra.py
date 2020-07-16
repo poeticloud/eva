@@ -1,5 +1,7 @@
 # pylint: disable=W0221,W0223
 
+import logging
+
 from codebase.web import APIRequestHandler
 
 from haomo.conf import settings
@@ -94,6 +96,7 @@ class ConsentHandler(BaseHandler):
         #     text=resp)
 
     async def post(self):
+        self.show_debug()
         body = self.get_body_json()
 
         challenge = body.get("challenge")
@@ -110,6 +113,7 @@ class ConsentHandler(BaseHandler):
         grant_scope = body.get("grant_scope")
         print(f"{challenge=}")
         print(f"{grant_scope=}")
+        logging.warning("grant_scope = %s", grant_scope)
 
         resp = await hydry_api.put("/oauth2/auth/requests/consent/accept", query_params={
             "consent_challenge": challenge}, body={
