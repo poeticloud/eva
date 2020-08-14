@@ -10,7 +10,8 @@ SECRET_KEY = "ChangeThisSecretKey"
 MODELS_MODULE = "codebase.models"
 
 # http://docs.sqlalchemy.org/en/latest/core/engines.html
-DB_URI = "sqlite://"
+# DB_URI = "sqlite://"
+DB_URI = "postgresql+psycopg2://eva:eva@127.0.0.1:5433/eva"
 INITDB = True
 
 ADMIN_USERNAME = "admin"

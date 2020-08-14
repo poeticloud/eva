@@ -13,8 +13,6 @@ import string
 import enum
 
 from sqlalchemy_utils import UUIDType
-from eva.conf import settings
-from eva.utils.time_ import utc_rfc3339_string
 from sqlalchemy import (
     event,
     Column,
@@ -29,6 +27,8 @@ from sqlalchemy import (
     Boolean
 )
 from sqlalchemy.orm import relationship
+
+from haomo.conf import settings
 
 from codebase.utils.sqlalchemy import dbc
 from codebase.utils.enc import check_password, encrypt_password

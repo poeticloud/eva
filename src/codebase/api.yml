@@ -18,7 +18,7 @@ servers:
 
 paths:
 
-  /:
+  "/":
     get:
       summary: 获取 OpenAPI 文档内容
       tags:
@@ -34,7 +34,7 @@ paths:
         '200':
           description: 返回接口文档内容
 
-  /healthz:
+  "/healthz":
     get:
       summary: 健康检查
       tags:
@@ -52,3 +52,92 @@ paths:
       operationId: get-healthz
       description: 如果服务健康返回大写 `OK` 即可
 
+  "/users":
+    post:
+      summary: 创建用户
+      description: |
+        创建用户
+        
+        1. 创建用仅指定 identifier 即可，后面再更新 password ，或只能使用验证码登录（目前还未支持）
+        2. 如果指定了 password ，用户即可通过 password 登录
+        3. 如果未指定 identifier 参数，则默认将该 identifier 当做用户名
+      requestBody:
+        description: 支持指定多中标识符
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                identifier:
+                  description: 标识符，用户名，邮件，手机等，同类型的标识符具有唯一性，可以查找到唯一用户。
+                  type: string
+                identifier_type:
+                  description: 标识符类型
+                  type: string
+                  enum:
+                  - USERNAME
+                  - EMAIL
+                  - PHONE
+                  default: USERNAME
+                password:
+                  description: 用户密码
+                  type: string
+              required:
+              - identifier
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: 错误代码
+                  message:
+                    type: string
+                    description: 错误详细描述
+                  data:
+                    type: object
+                    description: 可能的错误附加数据
+                    properties:
+                      uid:
+                        type: string
+                        description: 用户唯一ID
+                required:
+                  - code
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseFail'
+
+components:
+  schemas:
+    ResponseSuccess:
+      title: ResponseSuccess
+      type: object
+      x-examples:
+        example-1:
+          code: success
+      properties:
+        code:
+          type: string
+          description: 正确返回 success
+    ResponseFail:
+      title: DefaultFailResponse
+      type: object
+      properties:
+        code:
+          type: string
+          description: 错误代码
+        message:
+          type: string
+          description: 错误详细描述
+        data:
+          type: object
+          description: 可能的错误附加数据
+      required:
+        - code

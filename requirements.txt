@@ -5,5 +5,6 @@ sqlalchemy==1.3.16
 sqlalchemy-utils==0.36.3
 # database drivers
 psycopg2==2.8.5
+psycopg2-binary==2.8.5
 pg8000==1.15.1
 argon2-cffi==19.2.0
