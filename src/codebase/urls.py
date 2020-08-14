@@ -8,6 +8,7 @@ from codebase.controllers import (
 
 HANDLERS = [
 
+    url(r"/", default.SpecHandler),
     url(r"/healthz", default.HealthHandler),
 
     url(r"/auth/hydra/login", hydra.LoginHandler),

@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: eva
+  version: '1.0'
+  description: |
+    用户服务
+    
+    TODO:
+    1. 创建、更新、删除用户
+    2. 支持多种类型的用户唯一标识符（手机号、邮件、用户名等）
+    3. 支持多种身份验证方案（密码、手机验证码等）
+  contact:
+    name: 好风
+    email: gwindfree@gmail.com
+    url: https://gwind.me
+servers:
+  - url: 'http://localhost:3000'
+
+paths:
+
+  /:
+    get:
+      summary: 获取 OpenAPI 文档内容
+      tags:
+      - default
+      description: |
+        返回的内容为 YAML 格式文件，如果需要人性化可读，请使用 Swagger UI 或 Redocly 服务在线查看接口文档。
+        
+        示例，如果服务部署后，本接口的最终访问地址为 `http://127.0.0.1:3000/` ，则可以这样查看：
+        
+        - [`http://apidoc.ooclab.com/?url=http://127.0.0.1:3000/`](http://apidoc.ooclab.com/?url=http://127.0.0.1:3000/)
+        - [`http://redocly.github.io/redoc/?url=http://127.0.0.1:3000/`](http://redocly.github.io/redoc/?url=http://127.0.0.1:3000/&nocors)
+      responses:
+        '200':
+          description: 返回接口文档内容
+
+  /healthz:
+    get:
+      summary: 健康检查
+      tags:
+      - default
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                服务健康:
+                  value: OK
+      operationId: get-healthz
+      description: 如果服务健康返回大写 `OK` 即可
+
