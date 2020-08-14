@@ -147,7 +147,7 @@ class Password(Base):
     shadow = Column(String(512), nullable=False)
 
     credential_id = Column(Integer, ForeignKey("eva_credential.id"))
-    credential = relationship("Credential")
+    credential = relationship("Credential", backref="passwords")
 
     updated = Column(DateTime(), default=datetime.datetime.utcnow)
     expires_in = Column(DateTime())

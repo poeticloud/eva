@@ -1,9 +1,12 @@
 # pylint: disable=W0221,W0223
 
+import logging
+
 from codebase.web import APIRequestHandler
 
 from haomo.conf import settings
 from codebase.utils.api import AsyncApi
+from codebase.models.auth import Credential, IdentifierType, Identity, Password
 
 hydry_api = AsyncApi(url_prefix=settings.HYDRA_ADMIN_URL)
 
@@ -54,25 +57,32 @@ class LoginHandler(BaseHandler):
             "login_challenge": challenge})
         print(f"{resp=}")
 
-        print(f"{self.request.body=}")
-
         username = body.get("username")
         password = body.get("password")
-        print(f"{challenge=}")
-        print(f"{username=}")
-        print(f"{password=}")
 
-        resp = await hydry_api.put("/oauth2/auth/requests/login/accept", query_params={
-            "login_challenge": challenge}, body={
-                "subject": username,
-                "remember": True,
-                "remember_for": 3600,
-            })
-        print(f"{resp=}")
+        # 查找用户 (目前仅支持用户名标识符)
+        credential = self.db.query(Credential).filter(and_(
+            Credential.identifier == username,
+            Credential.identifier_type == IdentifierType.USERNAME)).first()
+        if not credential:
+            logging.error("用户 %s 不存在", username)
+            self.fail("用户不存在或密码错误")
+            return
 
-        url = resp.get("redirect_to")
-        self.success(redirect_to=url)
-        # self.redirect(url)
+        for item in credential.passwords:
+            if item.validate_password(password):
+                resp = await hydry_api.put("/oauth2/auth/requests/login/accept", query_params={
+                    "login_challenge": challenge}, body={
+                        "subject": username,
+                        "remember": True,
+                        "remember_for": 3600,
+                    })
+                print(f"{resp=}")
+
+                url = resp.get("redirect_to")
+                self.success(redirect_to=url)
+
+        self.fail("用户不存在或密码错误")
 
 
 class ConsentHandler(BaseHandler):
