@@ -32,7 +32,7 @@ class LoginHandler(BaseHandler):
         text = resp
         print(text)
 
-        url = f"https://c74.v5tkbpmby.dap.cnegroup.com/auth/#/login?challenge={challenge}"
+        url = f"{settings.WEBAUTH_URL_PREFIX}/#/login?challenge={challenge}"
         self.redirect(url)
         # items = ["Item 1", "Item 2", "Item 3"]
         # self.render(
@@ -84,7 +84,7 @@ class ConsentHandler(BaseHandler):
             "consent_challenge": challenge})
         print(f"{resp=}")
 
-        url = f"https://c74.v5tkbpmby.dap.cnegroup.com/auth/#/consent?challenge={challenge}"
+        url = f"{settings.WEBAUTH_URL_PREFIX}/#/consent?challenge={challenge}"
         self.redirect(url)
         # self.render(
         #     "consent.html",

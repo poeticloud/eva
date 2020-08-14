@@ -33,3 +33,5 @@ ARGON2_SALT_LEN = 16
 # hydra
 HYDRA_ADMIN_URL = "http://192.168.31.114:9001"
 PUBLIC_URL_PREFIX = ""
+# 前端（浏览器Web）认证方式的服务地址
+WEBAUTH_URL_PREFIX = "https://c74.v5tkbpmby.dap.cnegroup.com/auth"
