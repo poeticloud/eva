@@ -2,6 +2,8 @@
 
 import logging
 
+from sqlalchemy import and_
+
 from codebase.web import APIRequestHandler
 
 from haomo.conf import settings
