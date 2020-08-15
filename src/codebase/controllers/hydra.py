@@ -83,6 +83,7 @@ class LoginHandler(BaseHandler):
 
                 url = resp.get("redirect_to")
                 self.success(redirect_to=url)
+                return
 
         self.fail("用户不存在或密码错误")
 
