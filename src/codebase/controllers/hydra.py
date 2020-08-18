@@ -186,6 +186,8 @@ class LoginHandler(BaseHandler):
                 self.success(redirect_to=url)
                 return
 
+        # TODO: 如果用户被禁用等，需要 reject hydry
+
         self.fail("用户不存在或密码错误")
 
 
@@ -196,7 +198,7 @@ class ConsentHandler(BaseHandler):
         challenge = self.get_argument("consent_challenge")
         resp = await hydry_api.get("/oauth2/auth/requests/consent", query_params={
             "consent_challenge": challenge})
-        print(f"{resp=}")
+        logging.debug(f"{resp=}")
 
         url = f"{settings.WEBAUTH_URL_PREFIX}/#/consent?challenge={challenge}"
         self.redirect(url)
@@ -211,21 +213,27 @@ class ConsentHandler(BaseHandler):
 
         resp = await hydry_api.get("/oauth2/auth/requests/consent", query_params={
             "consent_challenge": challenge})
-        print(f"{resp=}")
+        logging.debug(f"{resp=}")
 
-        print(f"{self.request.body=}")
+        logging.debug(f"{self.request.body=}")
 
         grant_scope = body.get("grant_scope")
-        print(f"{challenge=}")
-        print(f"{grant_scope=}")
+        logging.debug(f"{challenge=}")
+        logging.debug(f"{grant_scope=}")
+        # TODO: 检查用户是否有这些 scope ? (目前来看都是 hydra 创建 client 时设定的)
 
         resp = await hydry_api.put("/oauth2/auth/requests/consent/accept", query_params={
             "consent_challenge": challenge}, body={
                 "grant_scope": grant_scope,
                 "remember": True,
                 "remember_for": 3600,
+                "session": {
+                    "id_token": {
+                        "roles": ["admin"],
+                    }
+                },
         })
-        print(f"{resp=}")
+        logging.debug(f"{resp=}")
 
         url = resp.get("redirect_to")
         self.success(redirect_to=url)
