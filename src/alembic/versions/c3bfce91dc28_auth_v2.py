@@ -69,6 +69,32 @@ def upgrade():
     op.drop_table('auth_app_session')
     op.drop_table('auth_app')
     op.drop_table('auth_user')
+
+    bind = op.get_bind()
+    db = sa.orm.Session(bind=bind)
+    from codebase.models.auth import Identity, Credential, Password, IdentifierType
+    from haomo.conf import settings
+
+    # 创建用户
+
+    identity = Identity()
+    db.add(identity)
+    db.commit()
+
+    credential = Credential(
+        identifier=settings.ADMIN_USERNAME,
+        identifier_type=IdentifierType.USERNAME,
+        identity=identity,
+    )
+    db.add(credential)
+    db.commit()
+
+    password = Password(
+        credential=credential,
+        password=settings.ADMIN_PASSWORD,
+    )
+    db.add(password)
+    db.commit()
     # ### end Alembic commands ###
 
 
@@ -129,4 +155,7 @@ def downgrade():
     op.drop_table('eva_credential')
     op.drop_table('eva_idp')
     op.drop_table('eva_identity')
+
+    op.execute("DROP TYPE idptype;")
+    op.execute("DROP TYPE identifiertype;")
     # ### end Alembic commands ###
