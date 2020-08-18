@@ -30,7 +30,6 @@ from sqlalchemy.orm import relationship
 
 from haomo.conf import settings
 
-from codebase.utils.sqlalchemy import dbc
 from codebase.utils.enc import check_password, encrypt_password
 
 from . import Base
