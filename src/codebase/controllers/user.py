@@ -2,7 +2,7 @@
 
 from sqlalchemy import and_
 
-from codebase.web import APIRequestHandler
+from codebase.web import APIRequestHandler, has_role
 from codebase.models.auth import Credential, IdentifierType, Identity, Password
 
 from haomo.conf import settings
@@ -10,6 +10,7 @@ from haomo.conf import settings
 
 class UserHandler(APIRequestHandler):
 
+    @has_role(settings.ADMIN_ROLE_CODE)
     def post(self):
         """创建用户"""
         body = self.get_body_json()

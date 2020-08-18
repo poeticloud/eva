@@ -2,6 +2,7 @@
 
 import functools
 import json
+import base64
 import logging
 import pprint
 
@@ -11,6 +12,8 @@ import tornado.web
 from tornado.web import HTTPError
 from tornado.escape import json_decode
 from tornado.log import app_log, gen_log
+
+from codebase.models.auth import Identity
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -33,6 +36,24 @@ else:
 
 
 class APIRequestHandler(MainBaseHandler):
+
+    _roles = []
+
+    def get_current_user(self):
+        self.show_debug()
+        self._roles = []  # FIXME!
+
+        payload = self.request.headers.get("X-JWT-Payload")
+        if not payload:
+            raise HTTPError(403, reason="X-Jwt-Payload is missing")
+        data = json.loads(base64.decodestring(payload.encode()))
+        # TODO: 校验 sub 为有效 uuid
+        identity = self.db.query(Identity).filter_by(uuid=data["sub"]).first()
+        if not identity:
+            raise HTTPError(403, reason="identity mismatch")
+
+        self._roles = data.get('roles')
+        return identity
 
     def fail(self, error="fail", errors=None, status=400, **kwargs):
         self.set_status(status)
@@ -136,3 +157,18 @@ def authenticated(method):
         return method(self, *args, **kwargs)
 
     return wrapper
+
+
+def has_role(role_name):
+    def f(method):
+        @functools.wraps(method)
+        def wrapper(self, *args, **kwargs):
+            if not self.current_user:
+                raise HTTPError(403, reason="need authenticated")
+            if not self._roles:
+                raise HTTPError(403, reason="no roles")
+            if role_name not in self._roles:
+                raise HTTPError(403, reason="role mismatch")
+            return method(self, *args, **kwargs)
+        return wrapper
+    return f
