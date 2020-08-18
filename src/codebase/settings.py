@@ -15,7 +15,7 @@ DB_URI = "postgresql+psycopg2://eva:eva@127.0.0.1:5433/eva"
 INITDB = True
 
 ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "admin"
+ADMIN_PASSWORD = "ffffff"
 
 # 密码是否永不过期？
 PASSWORD_PERMANENT = True
@@ -36,3 +36,7 @@ HYDRA_ADMIN_URL = "http://192.168.31.114:9001"
 PUBLIC_URL_PREFIX = ""
 # 前端（浏览器Web）认证方式的服务地址
 WEBAUTH_URL_PREFIX = "https://c74.v5tkbpmby.dap.cnegroup.com/auth"
+
+# authz
+ADMIN_ROLE_CODE = "admin"
+ADMIN_ROLE_NAME = "管理员"

@@ -25,6 +25,10 @@ from codebase.models.auth import (
     Password,
     SecurityCode,
 )
+from codebase.models.authz import (
+    Role,
+    Permission,
+)
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
