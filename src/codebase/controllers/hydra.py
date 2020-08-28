@@ -9,6 +9,7 @@ from codebase.web import APIRequestHandler
 from haomo.conf import settings
 from codebase.utils.api import AsyncApi
 from codebase.models.auth import Credential, IdentifierType, Identity, Password
+from codebase.models.authz import Role
 
 hydry_api = AsyncApi(url_prefix=settings.HYDRA_ADMIN_URL)
 
@@ -56,7 +57,7 @@ class DefaultLoginHandler(BaseHandler):
 
         resp = await hydry_api.get("/oauth2/auth/requests/login", query_params={
             "login_challenge": challenge})
-        print(f"{resp=}")
+        logging.debug(f"{resp=}")
 
         username = self.get_argument("username")
         password = self.get_argument("password")
@@ -215,6 +216,12 @@ class ConsentHandler(BaseHandler):
             "consent_challenge": challenge})
         logging.debug(f"{resp=}")
 
+        # TODO: check subject, identity 是否存在
+        subject = resp.get("subject")
+        identity = self.db.query(Identity).filter_by(uuid=subject).first()
+        if identity:
+            roles = [item.code for item in identity.roles]
+
         logging.debug(f"{self.request.body=}")
 
         grant_scope = body.get("grant_scope")
@@ -229,7 +236,7 @@ class ConsentHandler(BaseHandler):
                 "remember_for": 3600,
                 "session": {
                     "id_token": {
-                        "roles": ["admin"],
+                        "roles": roles,
                     }
                 },
         })

@@ -4,8 +4,7 @@ import datetime
 import uuid
 
 from sqlalchemy_utils import UUIDType
-from eva.conf import settings
-from eva.utils.time_ import utc_rfc3339_string
+from haomo.conf import settings
 from sqlalchemy import (
     event,
     Column,
@@ -60,8 +59,6 @@ class SimilarBase:
             "name": self.name,
             "summary": self.summary,
             "description": self.description,
-            "updated": utc_rfc3339_string(self.updated),
-            "created": utc_rfc3339_string(self.created),
         }
 
 
