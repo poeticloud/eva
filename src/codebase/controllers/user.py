@@ -15,15 +15,13 @@ class UserHandler(APIRequestHandler):
         body = self.get_body_json()
 
         if "identifier" not in body:
-            self.fail("请提供用户唯一标识符")
-            return
+            return self.fail("请提供用户唯一标识符")
 
         identifier = body["identifier"]
         identifier_type = body.get("identifier_type", "USERNAME")
 
         if identifier_type not in [x.name for x in IdentifierType]:
-            self.fail("无效的用户标识符类型")
-            return
+            return self.fail("无效的用户标识符类型")
 
         identifier_type = IdentifierType[identifier_type]
 
@@ -41,8 +39,7 @@ class UserHandler(APIRequestHandler):
             .first()
         )
         if credential:
-            self.fail(f"用户<{identifier}>已经存在")
-            return
+            return self.fail(f"用户<{identifier}>已经存在")
 
         # 创建用户
         identity = Identity()
@@ -62,4 +59,40 @@ class UserHandler(APIRequestHandler):
             self.db.add(password)
             self.db.commit()
 
-        self.success(data={"uid": str(identity.uuid)})
+        return self.success(data={"uid": str(identity.uuid)})
+
+
+class UserResetPasswordHandler(APIRequestHandler):
+    @has_role(settings.ADMIN_ROLE_CODE)
+    def post(self, uid):
+        body = self.get_body_json()
+        new_password = body.get("new_password")
+        old_password = body.get("old_password")
+
+        identifier_type = body.get("identifier_type", "USERNAME")
+
+        if identifier_type not in [x.name for x in IdentifierType]:
+            return self.fail("无效的用户标识符类型")
+
+        identifier_type = IdentifierType[identifier_type]
+
+        # 检查用户是否存在
+        credential = (
+            self.db.query(Credential)
+            .join(Credential.identity)
+            .filter(Identity.uuid == uid, Credential.identifier_type == identifier_type)
+            .first()
+        )
+        if not credential:
+            return self.fail(f"指定的用户不存在")
+
+        matched = None
+        for pwd in credential.passwords:
+            if pwd.validate_password(old_password):
+                matched = pwd
+                break
+        if not matched:
+            return self.fail("旧密码不匹配")
+        matched.set_password(new_password)
+        self.db.commit()
+        return self.success()

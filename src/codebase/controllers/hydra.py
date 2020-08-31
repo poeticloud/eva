@@ -8,8 +8,7 @@ from codebase.web import APIRequestHandler
 
 from haomo.conf import settings
 from codebase.utils.api import AsyncApi
-from codebase.models.auth import Credential, IdentifierType, Identity, Password
-from codebase.models.authz import Role
+from codebase.models.auth import Credential, IdentifierType, Identity
 
 hydry_api = AsyncApi(url_prefix=settings.HYDRA_ADMIN_URL)
 
@@ -39,7 +38,7 @@ class DefaultLoginHandler(BaseHandler):
 
         url = f"{settings.WEBAUTH_URL_PREFIX}/#/login?challenge={challenge}"
         items = ["Item 1", "Item 2", "Item 3"]
-        self.render(
+        await self.render(
             "login.html", challenge=challenge, title="My title", items=items, text=text
         )
 
@@ -48,8 +47,7 @@ class DefaultLoginHandler(BaseHandler):
 
         challenge = self.get_argument("challenge")
         if not challenge:
-            self.fail("no challenge")
-            return
+            return self.fail("no challenge")
 
         resp = await hydry_api.get(
             "/oauth2/auth/requests/login", query_params={"login_challenge": challenge}
@@ -72,8 +70,7 @@ class DefaultLoginHandler(BaseHandler):
         )
         if not credential:
             logging.error("用户 %s 不存在", username)
-            self.fail("用户不存在或密码错误")
-            return
+            return self.fail("用户不存在或密码错误")
 
         for item in credential.passwords:
             if item.validate_password(password):
@@ -92,7 +89,7 @@ class DefaultLoginHandler(BaseHandler):
                 self.redirect(url)
                 return
 
-        self.fail("用户不存在或密码错误")
+        return self.fail("用户不存在或密码错误")
 
 
 class DefaultConsentHandler(BaseHandler):
@@ -115,6 +112,7 @@ class DefaultConsentHandler(BaseHandler):
         )
 
     async def post(self):
+        body = self.get_body_json()
         challenge = self.get_argument("challenge")
         if not challenge:
             self.fail("no challenge")
