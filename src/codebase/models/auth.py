@@ -24,7 +24,7 @@ from sqlalchemy import (
     Text,
     JSON,
     Enum,
-    Boolean
+    Boolean,
 )
 from sqlalchemy.orm import relationship
 
@@ -83,17 +83,11 @@ class IdP(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(32), nullable=False)
-    type = Column(
-        Enum(IdPType), nullable=False,
-        doc="IdP类型")
+    type = Column(Enum(IdPType), nullable=False, doc="IdP类型")
 
-    config = Column(
-        JSON,
-        doc="该IdP的详细配置")
+    config = Column(JSON, doc="该IdP的详细配置")
 
-    is_active = Column(
-        Boolean, default=False,
-        doc="该IdP是否启用？")
+    is_active = Column(Boolean, default=False, doc="该IdP是否启用？")
 
     created = Column(DateTime(), default=datetime.datetime.utcnow)
     updated = Column(DateTime(), default=datetime.datetime.utcnow)
@@ -117,20 +111,18 @@ class Credential(Base):
 
     id = Column(Integer, primary_key=True)
 
-    identifier = Column(
-        String(64), nullable=False,
-        doc="凭证唯一标识，如：邮件地址,手机号,微信openid等")
+    identifier = Column(String(64), nullable=False, doc="凭证唯一标识，如：邮件地址,手机号,微信openid等")
     identifier_type = Column(
-        Enum(IdentifierType), nullable=False,
-        doc="identifier 的类型，如用户名只能对应密码认证；邮件和手机号可以有其对应的验证码认证")
+        Enum(IdentifierType),
+        nullable=False,
+        doc="identifier 的类型，如用户名只能对应密码认证；邮件和手机号可以有其对应的验证码认证",
+    )
 
     # 一个身份可以关联多个凭证
     identity_id = Column(Integer, ForeignKey("eva_identity.id"))
     identity = relationship("Identity", backref="credentials")
 
-    idp_id = Column(
-        Integer, ForeignKey("eva_idp.id"), nullable=True,
-        doc="如果第三方认证方式")
+    idp_id = Column(Integer, ForeignKey("eva_idp.id"), nullable=True, doc="如果第三方认证方式")
     idp = relationship("IdP")
 
     created = Column(DateTime(), default=datetime.datetime.utcnow)
@@ -156,7 +148,8 @@ class Password(Base):
         self.shadow = encrypt_password(password)
         if not permanent:
             self.expires_in = datetime.datetime.utcnow() + datetime.timedelta(
-                seconds=settings.getint("PASSWORD_AGE"))
+                seconds=settings.getint("PASSWORD_AGE")
+            )
 
     @property
     def is_expired(self):
@@ -194,7 +187,8 @@ class SecurityCode(Base):
         self.credential_id = credential.id
         self.shadow = encrypt_password(code)
         self.expires_in = datetime.datetime.utcnow() + datetime.timedelta(
-            seconds=settings.getint("SECURITY_CODE_AGE"))
+            seconds=settings.getint("SECURITY_CODE_AGE")
+        )
 
     @property
     def is_expired(self):

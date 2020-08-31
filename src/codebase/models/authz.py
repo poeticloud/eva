@@ -38,7 +38,6 @@ _ROLE_PERMISSIONS = Table(
 
 
 class SimilarBase:
-
     def update(self, **kwargs):
         length = len(kwargs)
         if "summary" in kwargs:

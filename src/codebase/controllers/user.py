@@ -9,7 +9,6 @@ from haomo.conf import settings
 
 
 class UserHandler(APIRequestHandler):
-
     @has_role(settings.ADMIN_ROLE_CODE)
     def post(self):
         """创建用户"""
@@ -31,9 +30,16 @@ class UserHandler(APIRequestHandler):
         # TODO: 校验 identifier 格式是否正确
 
         # 检查用户是否已经存在
-        credential = self.db.query(Credential).filter(and_(
-            Credential.identifier == identifier,
-            Credential.identifier_type == identifier_type)).first()
+        credential = (
+            self.db.query(Credential)
+            .filter(
+                and_(
+                    Credential.identifier == identifier,
+                    Credential.identifier_type == identifier_type,
+                )
+            )
+            .first()
+        )
         if credential:
             self.fail(f"用户<{identifier}>已经存在")
             return
@@ -44,9 +50,7 @@ class UserHandler(APIRequestHandler):
         self.db.commit()
 
         credential = Credential(
-            identifier=identifier,
-            identifier_type=identifier_type,
-            identity=identity,
+            identifier=identifier, identifier_type=identifier_type, identity=identity
         )
         self.db.add(credential)
         self.db.commit()
@@ -54,10 +58,7 @@ class UserHandler(APIRequestHandler):
         # 保存密码
         raw_password = body.get("password")
         if raw_password:
-            password = Password(
-                credential=credential,
-                password=raw_password,
-            )
+            password = Password(credential=credential, password=raw_password)
             self.db.add(password)
             self.db.commit()
 

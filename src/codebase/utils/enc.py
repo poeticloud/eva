@@ -21,8 +21,10 @@ def encrypt_password(plaintext):
         hash_len=settings.getint("ARGON2_HASH_LEN"),
         salt_len=settings.getint("ARGON2_SALT_LEN"),
         encoding="utf-8",
-        type=Type.ID)
+        type=Type.ID,
+    )
     return ph.hash(plaintext)
+
 
 def check_password(raw_password, enc_password):
     ph = PasswordHasher(
@@ -32,7 +34,8 @@ def check_password(raw_password, enc_password):
         hash_len=settings.getint("ARGON2_HASH_LEN"),
         salt_len=settings.getint("ARGON2_SALT_LEN"),
         encoding="utf-8",
-        type=Type.ID)
+        type=Type.ID,
+    )
     try:
         ph.verify(enc_password, raw_password)
         return True

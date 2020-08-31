@@ -17,7 +17,6 @@ from codebase.models.auth import Identity
 
 
 class BaseHandler(tornado.web.RequestHandler):
-
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header("Access-Control-Allow-Headers", "*")
@@ -52,7 +51,7 @@ class APIRequestHandler(MainBaseHandler):
         if not identity:
             raise HTTPError(403, reason="identity mismatch")
 
-        self._roles = data.get('roles')
+        self._roles = data.get("roles")
         return identity
 
     def fail(self, error="fail", errors=None, status=400, **kwargs):
@@ -111,7 +110,8 @@ class APIRequestHandler(MainBaseHandler):
         else:
             if message:
                 self.fail(
-                    error="exception", message=message, status=status_code, data=d)
+                    error="exception", message=message, status=status_code, data=d
+                )
             else:
                 self.fail(errors="exception", status=status_code, data=d)
 
@@ -170,5 +170,7 @@ def has_role(role_name):
             if role_name not in self._roles:
                 raise HTTPError(403, reason="role mismatch")
             return method(self, *args, **kwargs)
+
         return wrapper
+
     return f
