@@ -2,7 +2,7 @@ version: '3'
 services:
 
   postgres:
-    image: postgres:12
+    image: postgres:13-alpine
     environment:
       POSTGRES_DB: hydra
       POSTGRES_USER: hydra
@@ -18,9 +18,9 @@ services:
       - DSN=postgres://hydra:secret@postgres:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
       - SECRETS_SYSTEM=youReallyNeedToChangeThis
       # this value must be set to the publicly available URL of ORY Hydra (required).
-      - URLS_SELF_ISSUER=http://192.168.31.114:9000
-      - URLS_CONSENT=http://192.168.31.114:3001/auth/hydra/consent
-      - URLS_LOGIN=http://192.168.31.114:3001/auth/hydra/login
+      - URLS_SELF_ISSUER=http://192.168.10.52:9000
+      - URLS_CONSENT=http://192.168.10.52:3001/auth/hydra/consent
+      - URLS_LOGIN=http://192.168.10.52:3001/auth/hydra/login
       - LOG_LEAK_SENSITIVE_VALUES=true
     ports:
       - "9000:4444" # Public port

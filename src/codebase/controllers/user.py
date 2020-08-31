@@ -1,63 +1,65 @@
 # pylint: disable=W0221,W0223
+from typing import List, Optional
 
-from sqlalchemy import and_
+import pydantic
 
+from codebase.models.authz import Role
 from codebase.web import APIRequestHandler, has_role
 from codebase.models.auth import Credential, IdentifierType, Identity, Password
 
 from haomo.conf import settings
 
 
+class IdentifierPair(pydantic.BaseModel):
+    identifier: str
+    identifier_type: IdentifierType
+
+
 class UserHandler(APIRequestHandler):
     @has_role(settings.ADMIN_ROLE_CODE)
     def post(self):
         """创建用户"""
-        body = self.get_body_json()
 
-        if "identifier" not in body:
-            return self.fail("请提供用户唯一标识符")
+        class Body(pydantic.BaseModel):
+            identifiers: List[IdentifierPair]
+            password: Optional[str]
+            roles: Optional[List[str]]
 
-        identifier = body["identifier"]
-        identifier_type = body.get("identifier_type", "USERNAME")
-
-        if identifier_type not in [x.name for x in IdentifierType]:
-            return self.fail("无效的用户标识符类型")
-
-        identifier_type = IdentifierType[identifier_type]
-
-        # TODO: 校验 identifier 格式是否正确
+        body = Body.parse_obj(self.get_body_json())
 
         # 检查用户是否已经存在
-        credential = (
-            self.db.query(Credential)
-            .filter(
-                and_(
-                    Credential.identifier == identifier,
-                    Credential.identifier_type == identifier_type,
+        for pair in body.identifiers:
+            credential = (
+                self.db.query(Credential)
+                .filter(
+                    Credential.identifier == pair.identifier,
+                    Credential.identifier_type == pair.identifier_type,
                 )
+                .first()
             )
-            .first()
-        )
-        if credential:
-            return self.fail(f"用户<{identifier}>已经存在")
+            if credential:
+                return self.fail(f"用户<{pair.identifier}>已经存在")
 
-        # 创建用户
+        # 创建用户 # 设置角色
         identity = Identity()
+        if body.roles:
+            roles = self.db.query(Role).filter(Role.code.in_(body.roles)).all()
+            identity.roles = roles
+
         self.db.add(identity)
         self.db.commit()
 
-        credential = Credential(
-            identifier=identifier, identifier_type=identifier_type, identity=identity
-        )
-        self.db.add(credential)
+        for pair in body.identifiers:
+            credential = Credential(
+                identifier=pair.identifier,
+                identifier_type=pair.identifier_type,
+                identity=identity,
+            )
+            self.db.add(credential)
+            if body.password:
+                password = Password(credential=credential, password=body.password)
+                self.db.add(password)
         self.db.commit()
-
-        # 保存密码
-        raw_password = body.get("password")
-        if raw_password:
-            password = Password(credential=credential, password=raw_password)
-            self.db.add(password)
-            self.db.commit()
 
         return self.success(data={"uid": str(identity.uuid)})
 
@@ -65,22 +67,20 @@ class UserHandler(APIRequestHandler):
 class UserResetPasswordHandler(APIRequestHandler):
     @has_role(settings.ADMIN_ROLE_CODE)
     def post(self, uid):
-        body = self.get_body_json()
-        new_password = body.get("new_password")
-        old_password = body.get("old_password")
+        class Body(pydantic.BaseModel):
+            old_password: str
+            new_password: str
+            identifier_type: IdentifierType
 
-        identifier_type = body.get("identifier_type", "USERNAME")
-
-        if identifier_type not in [x.name for x in IdentifierType]:
-            return self.fail("无效的用户标识符类型")
-
-        identifier_type = IdentifierType[identifier_type]
+        body = Body.parse_obj(self.get_body_json())
 
         # 检查用户是否存在
         credential = (
             self.db.query(Credential)
             .join(Credential.identity)
-            .filter(Identity.uuid == uid, Credential.identifier_type == identifier_type)
+            .filter(
+                Identity.uuid == uid, Credential.identifier_type == body.identifier_type
+            )
             .first()
         )
         if not credential:
@@ -88,11 +88,52 @@ class UserResetPasswordHandler(APIRequestHandler):
 
         matched = None
         for pwd in credential.passwords:
-            if pwd.validate_password(old_password):
+            if pwd.validate_password(body.old_password):
                 matched = pwd
                 break
         if not matched:
             return self.fail("旧密码不匹配")
-        matched.set_password(new_password)
+        matched.set_password(body.new_password)
+        self.db.commit()
+        return self.success()
+
+
+class UserDetailHandler(APIRequestHandler):
+    @has_role(settings.ADMIN_ROLE_CODE)
+    def patch(self, uid):
+        class Body(pydantic.BaseModel):
+            roles: Optional[List[str]]
+            identifiers: Optional[List[IdentifierPair]]
+            is_active: Optional[bool]
+
+        body = Body.parse_obj(self.get_body_json())
+
+        identity = self.db.query(Identity).filter(Identity.uuid == uid).first()
+        if not identity:
+            return self.fail("指定的用户不存在")
+
+        # 更新用户的角色
+        if body.roles:
+            roles = self.db.query(Role).filter(Role.code.in_(body.roles))
+            identity.roles = roles
+
+        # 更新用户identifier信息
+        if body.identifiers:
+            for pair in body.identifiers:
+                credential = (
+                    self.db.query(Credential)
+                    .join(Credential.identity)
+                    .filter(
+                        Identity.uuid == uid,
+                        Credential.identifier_type == pair.identifier_type,
+                    )
+                    .first()
+                )
+                credential.identifier = pair.identifier
+
+        # 更新用户活动状态
+        if body.is_active is not None:
+            identity.is_active = body.is_active
+
         self.db.commit()
         return self.success()

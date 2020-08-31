@@ -37,10 +37,10 @@ from . import Base
 
 @enum.unique
 class IdentifierType(enum.Enum):
-    USERNAME = enum.auto()
-    EMAIL = enum.auto()
-    PHONE = enum.auto()
-    IDP = enum.auto()
+    USERNAME = "USERNAME"
+    EMAIL = "EMAIL"
+    PHONE = "PHONE"
+    IDP = "IDP"
 
 
 @enum.unique
@@ -64,6 +64,7 @@ class Identity(Base):
 
     id = Column(Integer, primary_key=True)
     uuid = Column(UUIDType(), default=uuid.uuid4, unique=True)
+    is_active = Column(Boolean, default=True)
     created = Column(DateTime(), default=datetime.datetime.utcnow)
 
 

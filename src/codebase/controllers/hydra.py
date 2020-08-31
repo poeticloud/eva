@@ -186,8 +186,10 @@ class LoginHandler(BaseHandler):
         )
         if not credential:
             logging.error("用户 %s 不存在", username)
-            self.fail("用户不存在或密码错误")
-            return
+            return self.fail("用户不存在或密码错误")
+
+        if not credential.identity.is_active:
+            return self.fail("该用户已被禁用")
 
         for item in credential.passwords:
             if item.validate_password(password):
