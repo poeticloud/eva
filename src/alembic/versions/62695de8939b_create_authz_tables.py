@@ -59,30 +59,7 @@ def upgrade():
         sa.ForeignKeyConstraint(["role_id"], ["eva_role.id"]),
     )
 
-    bind = op.get_bind()
-    db = sa.orm.Session(bind=bind)
-    from codebase.models.authz import Role, Permission
-    from codebase.models.auth import Identity, IdentifierType, Credential
-    from haomo.conf import settings
 
-    role = Role(code=settings.ADMIN_ROLE_CODE, name=settings.ADMIN_ROLE_NAME)
-    db.add(role)
-    db.commit()
-
-    # 查找 admin
-    credential = (
-        db.query(Credential)
-        .filter(
-            sa.and_(
-                Credential.identifier == settings.ADMIN_USERNAME,
-                Credential.identifier_type == IdentifierType.USERNAME,
-            )
-        )
-        .first()
-    )
-    if credential:
-        credential.identity.roles.append(role)
-        db.commit()
     # ### end Alembic commands ###
 
 

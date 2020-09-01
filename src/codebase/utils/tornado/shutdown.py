@@ -1,4 +1,5 @@
 import signal
+import logging
 from functools import partial
 
 import tornado.ioloop

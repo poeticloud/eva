@@ -6,6 +6,7 @@ from importlib import import_module
 import tornado.options
 
 from codebase.models.auth import Identity, Credential, IdentifierType, Password
+from codebase.models.authz import Role
 from haomo.conf import settings
 
 from codebase.app import make_app
@@ -68,6 +69,13 @@ def init_db():
 
     password = Password(credential=credential, password=settings.ADMIN_PASSWORD)
     db.add(password)
+    db.commit()
+
+    role = Role(code=settings.ADMIN_ROLE_CODE, name=settings.ADMIN_ROLE_NAME)
+    db.add(role)
+    db.commit()
+
+    identity.roles.append(role)
     db.commit()
 
 
