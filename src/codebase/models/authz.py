@@ -24,16 +24,16 @@ from . import Base
 _USER_ROLES = Table(
     "eva_identity__role",
     Base.metadata,
-    Column("identity_id", Integer, ForeignKey("eva_identity.id")),
-    Column("role_id", Integer, ForeignKey("eva_role.id")),
+    Column("identity_id", Integer, ForeignKey("eva_identity.id", ondelete="CASCADE")),
+    Column("role_id", Integer, ForeignKey("eva_role.id", ondelete="CASCADE")),
 )
 
 
 _ROLE_PERMISSIONS = Table(
     "eva_role__permission",
     Base.metadata,
-    Column("role_id", Integer, ForeignKey("eva_role.id")),
-    Column("permission_id", Integer, ForeignKey("eva_permission.id")),
+    Column("role_id", Integer, ForeignKey("eva_role.id", ondelete="CASCADE")),
+    Column("permission_id", Integer, ForeignKey("eva_permission.id", ondelete="CASCADE")),
 )
 
 

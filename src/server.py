@@ -1,12 +1,11 @@
 #! /usr/bin/env python3
 
-
-import time
-import signal
 import logging
 from importlib import import_module
 
 import tornado.options
+
+from codebase.models.auth import Identity, Credential, IdentifierType, Password
 from haomo.conf import settings
 
 from codebase.app import make_app
@@ -42,6 +41,33 @@ def main():
     server.add_sockets(sockets)
     logging.info(f"{settings.APP_NAME} is running at %d", port)
     tornado.ioloop.IOLoop.instance().start()
+
+
+def init_db():
+    db = dbc()
+
+    if db.query(Credential).filter(
+        Credential.identifier_type == IdentifierType.USERNAME,
+        Credential.identifier == settings.ADMIN_USERNAME,
+    ).first():
+        return
+
+    # 创建初始化用户
+    identity = Identity()
+    db.add(identity)
+    db.commit()
+
+    credential = Credential(
+        identifier=settings.ADMIN_USERNAME,
+        identifier_type=IdentifierType.USERNAME,
+        identity=identity,
+    )
+    db.add(credential)
+    db.commit()
+
+    password = Password(credential=credential, password=settings.ADMIN_PASSWORD)
+    db.add(password)
+    db.commit()
 
 
 if __name__ == "__main__":
