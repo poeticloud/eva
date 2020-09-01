@@ -120,7 +120,7 @@ class Credential(Base):
     )
 
     # 一个身份可以关联多个凭证
-    identity_id = Column(Integer, ForeignKey("eva_identity.id"))
+    identity_id = Column(Integer, ForeignKey("eva_identity.id", ondelete="CASCADE"))
     identity = relationship("Identity", backref="credentials")
 
     idp_id = Column(Integer, ForeignKey("eva_idp.id"), nullable=True, doc="如果第三方认证方式")
@@ -138,7 +138,7 @@ class Password(Base):
     id = Column(Integer, primary_key=True)
     shadow = Column(String(512), nullable=False)
 
-    credential_id = Column(Integer, ForeignKey("eva_credential.id"))
+    credential_id = Column(Integer, ForeignKey("eva_credential.id", ondelete="CASCADE"))
     credential = relationship("Credential", backref="passwords")
 
     updated = Column(DateTime(), default=datetime.datetime.utcnow)

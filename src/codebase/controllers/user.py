@@ -137,3 +137,11 @@ class UserDetailHandler(APIRequestHandler):
 
         self.db.commit()
         return self.success()
+
+    def delete(self, uid):
+        identity = self.db.query(Identity).filter(Identity.uuid == uid).first()
+        if not identity:
+            return self.fail("指定的用户不存在")
+        self.db.delete(identity)
+        self.db.commit()
+        return self.success()
