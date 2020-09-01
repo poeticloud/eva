@@ -7,7 +7,7 @@ from . import global_settings
 logger = logging.getLogger(__file__)
 
 ENVIRONMENT_VARIABLE = "HAOMO_SETTINGS_MODULE"
-DEFAULT_SETTING_MODULE = 'codebase.settings'
+DEFAULT_SETTING_MODULE = "codebase.settings"
 
 
 class LazySettings:
@@ -25,7 +25,8 @@ class LazySettings:
         """
         try:
             settings_module = os.environ.get(
-                ENVIRONMENT_VARIABLE, DEFAULT_SETTING_MODULE)
+                ENVIRONMENT_VARIABLE, DEFAULT_SETTING_MODULE
+            )
             if not settings_module:  # If it's set but is an empty string.
                 raise KeyError
         except KeyError:
@@ -34,7 +35,8 @@ class LazySettings:
                 "Requested %s, but settings are not configured. "
                 "You must either define the environment variable %s "
                 "or call settings.configure() before accessing settings."
-                % (desc, ENVIRONMENT_VARIABLE))
+                % (desc, ENVIRONMENT_VARIABLE)
+            )
 
         self._wrapped = Settings(settings_module)
 
@@ -54,7 +56,7 @@ class LazySettings:
         argument must support attribute access (__getattr__)).
         """
         if self._wrapped is not empty:
-            raise RuntimeError('Settings already configured.')
+            raise RuntimeError("Settings already configured.")
         holder = UserSettingsHolder(default_settings)
         for name, value in options.items():
             setattr(holder, name, value)
@@ -80,8 +82,7 @@ class LazySettings:
         try:
             return int(v)
         except:
-            logger.warning(
-                f"settings.{name} is not a int: {v}")
+            logger.warning(f"settings.{name} is not a int: {v}")
             return 0
 
 
@@ -95,7 +96,6 @@ class BaseSettings:
 
 
 class Settings(BaseSettings):
-
     def __init__(self, settings_module):
         # update this dict from global settings (but only for ALL_CAPS settings)
         for setting in dir(global_settings):
@@ -110,8 +110,7 @@ class Settings(BaseSettings):
         except ImportError as e:
             raise ImportError(
                 "Could not import settings '%s' (Is it on sys.path? Is there an "
-                "import error in the settings file?): %s"
-                % (self.SETTINGS_MODULE, e)
+                "import error in the settings file?): %s" % (self.SETTINGS_MODULE, e)
             )
 
         for setting in dir(mod):
@@ -120,8 +119,7 @@ class Settings(BaseSettings):
                 setattr(self, setting, setting_value)
 
         if not self.SECRET_KEY:
-            raise ImproperlyConfigured(
-                "The SECRET_KEY setting must not be empty.")
+            raise ImproperlyConfigured("The SECRET_KEY setting must not be empty.")
 
 
 settings = LazySettings()

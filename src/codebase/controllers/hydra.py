@@ -1,92 +1,269 @@
 # pylint: disable=W0221,W0223
 
-import tornado.web
+import logging
+
+from sqlalchemy import and_
+
+from codebase.web import APIRequestHandler
 
 from haomo.conf import settings
 from codebase.utils.api import AsyncApi
+from codebase.models.auth import Credential, IdentifierType, Identity
 
 hydry_api = AsyncApi(url_prefix=settings.HYDRA_ADMIN_URL)
 
 
-class LoginHandler(tornado.web.RequestHandler):
+class BaseHandler(APIRequestHandler):
+    @property
+    def request_uri(self):
+        """返回合适的 URI
 
+        1. 如果设置了URI前缀（部署时指定），则绑定该前缀
+        2. 如果无URI前缀，则使用 request.path 即可
+        """
+        if settings.PUBLIC_URL_PREFIX:
+            return settings.PUBLIC_URL_PREFIX + self.request.path
+        return self.request.path
+
+
+class DefaultLoginHandler(BaseHandler):
     async def get(self):
 
         challenge = self.get_argument("login_challenge")
-        resp = await hydry_api.get("/oauth2/auth/requests/login", query_params={
-            "login_challenge": challenge})
+        resp = await hydry_api.get(
+            "/oauth2/auth/requests/login", query_params={"login_challenge": challenge}
+        )
         text = resp
         print(text)
 
+        url = f"{settings.WEBAUTH_URL_PREFIX}/#/login?challenge={challenge}"
         items = ["Item 1", "Item 2", "Item 3"]
-        self.render(
-            "login.html",
-            challenge=challenge,
-            title="My title",
-            items=items,
-            text=text)
+        await self.render(
+            "login.html", challenge=challenge, title="My title", items=items, text=text
+        )
 
     async def post(self):
-        challenge = self.get_body_argument("challenge")
-        resp = await hydry_api.get("/oauth2/auth/requests/login", query_params={
-            "login_challenge": challenge})
-        print(f"{resp=}")
+        # TODO: 1. 错误重定向
 
-        print(f"{self.request.body=}")
+        challenge = self.get_argument("challenge")
+        if not challenge:
+            return self.fail("no challenge")
 
-        username = self.get_body_argument("username")
-        password = self.get_body_argument("password")
-        print(f"{challenge=}")
-        print(f"{username=}")
-        print(f"{password=}")
+        resp = await hydry_api.get(
+            "/oauth2/auth/requests/login", query_params={"login_challenge": challenge}
+        )
+        logging.debug(f"{resp=}")
 
-        resp = await hydry_api.put("/oauth2/auth/requests/login/accept", query_params={
-            "login_challenge": challenge}, body={
-                "subject": username,
-                "remember": True,
-                "remember_for": 3600,
-            })
-        print(f"{resp=}")
+        username = self.get_argument("username")
+        password = self.get_argument("password")
 
-        url = resp["redirect_to"]
-        self.redirect(url)
+        # 查找用户 (目前仅支持用户名标识符)
+        credential = (
+            self.db.query(Credential)
+            .filter(
+                and_(
+                    Credential.identifier == username,
+                    Credential.identifier_type == IdentifierType.USERNAME,
+                )
+            )
+            .first()
+        )
+        if not credential:
+            logging.error("用户 %s 不存在", username)
+            return self.fail("用户不存在或密码错误")
+
+        for item in credential.passwords:
+            if item.validate_password(password):
+                resp = await hydry_api.put(
+                    "/oauth2/auth/requests/login/accept",
+                    query_params={"login_challenge": challenge},
+                    body={
+                        "subject": str(credential.identity.uuid),
+                        "remember": True,
+                        "remember_for": 3600,
+                    },
+                )
+                logging.info(f"{resp=}")
+
+                url = resp.get("redirect_to")
+                self.redirect(url)
+                return
+
+        return self.fail("用户不存在或密码错误")
 
 
-class ConsentHandler(tornado.web.RequestHandler):
-
+class DefaultConsentHandler(BaseHandler):
     async def get(self):
 
         challenge = self.get_argument("consent_challenge")
-        resp = await hydry_api.get("/oauth2/auth/requests/consent", query_params={
-            "consent_challenge": challenge})
+        resp = await hydry_api.get(
+            "/oauth2/auth/requests/consent",
+            query_params={"consent_challenge": challenge},
+        )
         print(f"{resp=}")
 
+        url = f"{settings.WEBAUTH_URL_PREFIX}/#/consent?challenge={challenge}"
         self.render(
             "consent.html",
             title="Hydra Consent",
             requested_scope=resp["requested_scope"],
             challenge=challenge,
-            text=resp)
+            text=resp,
+        )
 
     async def post(self):
+        body = self.get_body_json()
         challenge = self.get_argument("challenge")
-        resp = await hydry_api.get("/oauth2/auth/requests/consent", query_params={
-            "consent_challenge": challenge})
+        if not challenge:
+            self.fail("no challenge")
+            return
+
+        resp = await hydry_api.get(
+            "/oauth2/auth/requests/consent",
+            query_params={"consent_challenge": challenge},
+        )
         print(f"{resp=}")
 
         print(f"{self.request.body=}")
 
-        grant_scope = self.get_body_arguments("grant_scope")
+        grant_scope = body.get("grant_scope")
         print(f"{challenge=}")
         print(f"{grant_scope=}")
 
-        resp = await hydry_api.put("/oauth2/auth/requests/consent/accept", query_params={
-            "consent_challenge": challenge}, body={
+        resp = await hydry_api.put(
+            "/oauth2/auth/requests/consent/accept",
+            query_params={"consent_challenge": challenge},
+            body={"grant_scope": grant_scope, "remember": True, "remember_for": 3600},
+        )
+        print(f"{resp=}")
+
+        url = resp.get("redirect_to")
+        self.redirect(url)
+
+
+class LoginHandler(BaseHandler):
+    async def get(self):
+
+        challenge = self.get_argument("login_challenge")
+        resp = await hydry_api.get(
+            "/oauth2/auth/requests/login", query_params={"login_challenge": challenge}
+        )
+        text = resp
+        print(text)
+
+        url = f"{settings.WEBAUTH_URL_PREFIX}/#/login?challenge={challenge}"
+        self.redirect(url)
+
+    async def post(self):
+        body = self.get_body_json()
+
+        if "challenge" not in body:
+            self.fail("no challenge")
+            return
+
+        challenge = body["challenge"]
+        resp = await hydry_api.get(
+            "/oauth2/auth/requests/login", query_params={"login_challenge": challenge}
+        )
+        logging.info(f"{resp=}")
+        if "error" in resp:
+            self.fail(f"交换登录信息失败：{resp}")
+            return
+
+        username = body.get("username")
+        password = body.get("password")
+
+        # 查找用户 (目前仅支持用户名标识符)
+        credential = (
+            self.db.query(Credential)
+            .filter(
+                and_(
+                    Credential.identifier == username,
+                    Credential.identifier_type == IdentifierType.USERNAME,
+                )
+            )
+            .first()
+        )
+        if not credential:
+            logging.error("用户 %s 不存在", username)
+            return self.fail("用户不存在或密码错误")
+
+        if not credential.identity.is_active:
+            return self.fail("该用户已被禁用")
+
+        for item in credential.passwords:
+            if item.validate_password(password):
+                resp = await hydry_api.put(
+                    "/oauth2/auth/requests/login/accept",
+                    query_params={"login_challenge": challenge},
+                    body={
+                        "subject": str(credential.identity.uuid),
+                        "remember": True,
+                        "remember_for": 3600,
+                    },
+                )
+                logging.info(f"{resp=}")
+
+                url = resp.get("redirect_to")
+                self.success(redirect_to=url)
+                return
+
+        # TODO: 如果用户被禁用等，需要 reject hydry
+
+        self.fail("用户不存在或密码错误")
+
+
+class ConsentHandler(BaseHandler):
+    async def get(self):
+
+        challenge = self.get_argument("consent_challenge")
+        resp = await hydry_api.get(
+            "/oauth2/auth/requests/consent",
+            query_params={"consent_challenge": challenge},
+        )
+        logging.debug(f"{resp=}")
+
+        url = f"{settings.WEBAUTH_URL_PREFIX}/#/consent?challenge={challenge}"
+        self.redirect(url)
+
+    async def post(self):
+        body = self.get_body_json()
+
+        challenge = body.get("challenge")
+        if not challenge:
+            self.fail("no challenge")
+            return
+
+        resp = await hydry_api.get(
+            "/oauth2/auth/requests/consent",
+            query_params={"consent_challenge": challenge},
+        )
+        logging.debug(f"{resp=}")
+
+        # TODO: check subject, identity 是否存在
+        subject = resp.get("subject")
+        identity = self.db.query(Identity).filter_by(uuid=subject).first()
+        if identity:
+            roles = [item.code for item in identity.roles]
+
+        logging.debug(f"{self.request.body=}")
+
+        grant_scope = body.get("grant_scope")
+        logging.debug(f"{challenge=}")
+        logging.debug(f"{grant_scope=}")
+        # TODO: 检查用户是否有这些 scope ? (目前来看都是 hydra 创建 client 时设定的)
+
+        resp = await hydry_api.put(
+            "/oauth2/auth/requests/consent/accept",
+            query_params={"consent_challenge": challenge},
+            body={
                 "grant_scope": grant_scope,
                 "remember": True,
                 "remember_for": 3600,
-        })
-        print(f"{resp=}")
+                "session": {"id_token": {"roles": roles}},
+            },
+        )
+        logging.debug(f"{resp=}")
 
-        url = resp["redirect_to"]
-        self.redirect(url)
+        url = resp.get("redirect_to")
+        self.success(redirect_to=url)

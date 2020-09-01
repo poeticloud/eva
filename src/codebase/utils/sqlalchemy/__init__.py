@@ -43,7 +43,7 @@ class DBC:
         """
         while True:
             try:
-                self.engine.execute('SELECT 1')
+                self.engine.execute("SELECT 1")
                 break
             except (OperationalError, InterfaceError, ProgrammingError) as e:
                 # InterfaceError 是 db 还没启动，拒绝连接的异常

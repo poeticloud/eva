@@ -58,3 +58,32 @@ docker run --rm -it \
 ```
 
 http://192.168.31.114:9000/oauth2/auth?audience=&client_id=facebook-photo-backup&max_age=0&nonce=pvdlqfeavyyapngpjdefswjj&prompt=&redirect_uri=http://192.168.31.114:9010/callback&response_type=code&scope=openid+offline+photos.read&state=zskyzfhmurfdlrpjvkwtlxia
+
+
+如果使用 `pkce-vanilla-js` 测试浏览器端的 Client ，则创建 client 如下：
+
+```
+docker run --rm -it \
+  -e HYDRA_ADMIN_URL=http://192.168.31.114:9001 \
+  oryd/hydra:latest \
+  clients create --skip-tls-verify \
+    --id c9 \
+    --grant-types authorization_code,refresh_token,client_credentials,implicit \
+    --response-types token,code,id_token \
+    --scope openid,offline,photos.read \
+    --callbacks http://localhost:8000/ --endpoint=http://192.168.31.114:9001 \
+    --token-endpoint-auth-method none
+```
+
+配置 index.html 示例：
+
+```js
+// Configure your application and authorization server details
+var config = {
+    client_id: "c6",
+    redirect_uri: "http://localhost:8000",
+    authorization_endpoint: "http://localhost:9000/oauth2/auth",
+    token_endpoint: "http://localhost:9000/oauth2/token",
+    requested_scopes: "openid"
+};
+```

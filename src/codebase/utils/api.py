@@ -2,13 +2,7 @@
 
 import json
 import logging
-from urllib.parse import (
-    urlencode,
-    urljoin,
-    urlparse,
-    parse_qsl,
-    urlunparse,
-)
+from urllib.parse import urlencode, urljoin, urlparse, parse_qsl, urlunparse
 
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
@@ -37,8 +31,13 @@ class AsyncApi:
         """
 
     async def request(
-            self, url: str, method: str = "GET", headers: dict = None,
-            query_params: dict = None, body: dict = None):
+        self,
+        url: str,
+        method: str = "GET",
+        headers: dict = None,
+        query_params: dict = None,
+        body: dict = None,
+    ):
         if url[0] == "/":
             url = urljoin(self.url_prefix, url[1:])
         if query_params and isinstance(query_params, dict):
@@ -87,16 +86,20 @@ class AsyncApi:
 
     async def get(self, url, query_params=None, headers=None):
         return await self.request(
-            url, method="GET", query_params=query_params, headers=headers)
+            url, method="GET", query_params=query_params, headers=headers
+        )
 
     async def post(self, url, query_params=None, body=None, headers=None):
         return await self.request(
-            url, method="POST", query_params=query_params, body=body, headers=headers)
+            url, method="POST", query_params=query_params, body=body, headers=headers
+        )
 
     async def put(self, url, query_params=None, body=None, headers=None):
         return await self.request(
-            url, method="PUT", query_params=query_params, body=body, headers=headers)
+            url, method="PUT", query_params=query_params, body=body, headers=headers
+        )
 
     async def delete(self, url, query_params=None, headers=None):
         return await self.request(
-            url, method="DELETE", query_params=query_params, headers=headers)
+            url, method="DELETE", query_params=query_params, headers=headers
+        )

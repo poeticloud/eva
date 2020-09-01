@@ -13,7 +13,7 @@
   <div>
     {{ text }}
   </div>
-  <form action="/auth/hydra/login" method="POST">
+  <form action="{{ handler.request_uri }}" method="POST">
     <input type="hidden" name="challenge" value="{{ challenge }}">
     <input type="text" name="username">
     <input type="password" name="password">
