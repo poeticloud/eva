@@ -16,6 +16,7 @@ from codebase.utils.tornado.shutdown import hook_shutdown_graceful
 def main():
 
     dbc.wait_for_it()
+    init_db()
 
     # sync database
     if settings.getbool("INITDB"):
@@ -44,7 +45,7 @@ def main():
 
 
 def init_db():
-    db = dbc()
+    db = dbc.session
 
     if db.query(Credential).filter(
         Credential.identifier_type == IdentifierType.USERNAME,
