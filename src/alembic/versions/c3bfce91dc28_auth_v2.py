@@ -94,7 +94,6 @@ def upgrade():
     op.drop_table("auth_app")
     op.drop_table("auth_user")
 
-
     # ### end Alembic commands ###
 
 

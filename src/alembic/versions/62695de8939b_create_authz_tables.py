@@ -59,7 +59,6 @@ def upgrade():
         sa.ForeignKeyConstraint(["role_id"], ["eva_role.id"]),
     )
 
-
     # ### end Alembic commands ###
 
 

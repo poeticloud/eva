@@ -165,7 +165,8 @@ class LoginHandler(BaseHandler):
         body = Req.parse_obj(self.get_body_json())
 
         resp = await hydry_api.get(
-            "/oauth2/auth/requests/login", query_params={"login_challenge": body.challenge}
+            "/oauth2/auth/requests/login",
+            query_params={"login_challenge": body.challenge},
         )
         logging.info(f"{resp=}")
         if "error" in resp:
@@ -177,7 +178,7 @@ class LoginHandler(BaseHandler):
             .filter(
                 and_(
                     Credential.identifier == body.identifier,
-                    Credential.identifier_type == body.identifier_type
+                    Credential.identifier_type == body.identifier_type,
                 )
             )
             .first()

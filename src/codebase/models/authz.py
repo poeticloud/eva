@@ -33,7 +33,9 @@ _ROLE_PERMISSIONS = Table(
     "eva_role__permission",
     Base.metadata,
     Column("role_id", Integer, ForeignKey("eva_role.id", ondelete="CASCADE")),
-    Column("permission_id", Integer, ForeignKey("eva_permission.id", ondelete="CASCADE")),
+    Column(
+        "permission_id", Integer, ForeignKey("eva_permission.id", ondelete="CASCADE")
+    ),
 )
 
 
