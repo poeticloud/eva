@@ -165,7 +165,7 @@ class LoginHandler(BaseHandler):
         body = Req.parse_obj(self.get_body_json())
 
         resp = await hydry_api.get(
-            "/oauth2/auth/requests/login", query_params={"login_challenge": req.challenge}
+            "/oauth2/auth/requests/login", query_params={"login_challenge": body.challenge}
         )
         logging.info(f"{resp=}")
         if "error" in resp:
