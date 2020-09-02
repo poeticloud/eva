@@ -11,6 +11,6 @@ HANDLERS = [
     url(r"/auth/hydra/login.form", hydra.DefaultLoginHandler),
     url(r"/auth/hydra/consent.form", hydra.DefaultConsentHandler),
     url(r"/user", user.UserHandler),
-    url(r"/user/(\d+)/reset_password", user.UserResetPasswordHandler),
-    url(r"/user/(\d+)", user.UserDetailHandler),
+    url(r"/user/([\w\-]+)/reset_password", user.UserResetPasswordHandler),
+    url(r"/user/([\w\-]+)", user.UserDetailHandler),
 ]
