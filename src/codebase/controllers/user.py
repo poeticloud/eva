@@ -24,6 +24,7 @@ class UserHandler(APIRequestHandler):
             identifiers: List[IdentifierPair]
             password: Optional[str]
             roles: Optional[List[str]]
+            is_active: Optional[bool] = True
 
         body = Body.parse_obj(self.get_body_json())
 
@@ -41,7 +42,7 @@ class UserHandler(APIRequestHandler):
                 return self.fail(f"用户<{pair.identifier}>已经存在")
 
         # 创建用户 # 设置角色
-        identity = Identity()
+        identity = Identity(is_active=body.is_active)
         if body.roles:
             roles = self.db.query(Role).filter(Role.code.in_(body.roles)).all()
             identity.roles = roles
