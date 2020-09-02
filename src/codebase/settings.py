@@ -16,8 +16,6 @@ DB_URI = "postgresql+psycopg2://eva:hl3tn922fZOpOdFjwbVdJ2t8Dl+C8eujJ1EX@g1.dap.
 
 INITDB = True
 
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "ffffff"
 
 # 密码是否永不过期？
 PASSWORD_PERMANENT = True
@@ -40,5 +38,7 @@ PUBLIC_URL_PREFIX = ""
 WEBAUTH_URL_PREFIX = "https://c74.v5tkbpmby.dap.cnegroup.com/auth"
 
 # authz
+ADMIN_EMAIL = "admin"
+ADMIN_PASSWORD = "ffffff"
 ADMIN_ROLE_CODE = "admin"
 ADMIN_ROLE_NAME = "管理员"

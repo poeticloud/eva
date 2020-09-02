@@ -48,10 +48,14 @@ def main():
 def init_db():
     db = dbc.session
 
-    if db.query(Credential).filter(
-        Credential.identifier_type == IdentifierType.USERNAME,
-        Credential.identifier == settings.ADMIN_USERNAME,
-    ).first():
+    if (
+        db.query(Credential)
+        .filter(
+            Credential.identifier_type == IdentifierType.EMAIL,
+            Credential.identifier == settings.ADMIN_EMAIL,
+        )
+        .first()
+    ):
         return
 
     # 创建初始化用户
@@ -60,8 +64,8 @@ def init_db():
     db.commit()
 
     credential = Credential(
-        identifier=settings.ADMIN_USERNAME,
-        identifier_type=IdentifierType.USERNAME,
+        identifier=settings.ADMIN_EMAIL,
+        identifier_type=IdentifierType.EMAIL,
         identity=identity,
     )
     db.add(credential)
