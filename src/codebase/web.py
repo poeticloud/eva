@@ -45,7 +45,8 @@ class APIRequestHandler(MainBaseHandler):
         payload = self.request.headers.get("X-JWT-Payload")
         if not payload:
             raise HTTPError(403, reason="X-Jwt-Payload is missing")
-        data = json.loads(base64.decodestring(payload.encode()))
+        payload = base64.urlsafe_b64decode(payload + "=" * (4 - len(payload) % 4))
+        data = json.loads(payload.decode())
         # TODO: 校验 sub 为有效 uuid
         identity = self.db.query(Identity).filter_by(uuid=data["sub"]).first()
         if not identity:

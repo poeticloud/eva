@@ -66,40 +66,6 @@ class UserHandler(APIRequestHandler):
         return self.success(data={"uid": str(identity.uuid)})
 
 
-class UserResetPasswordHandler(APIRequestHandler):
-    @has_role(settings.ADMIN_ROLE_CODE)
-    def post(self, uid):
-        class Body(pydantic.BaseModel):
-            old_password: str
-            new_password: str
-            identifier_type: IdentifierType
-
-        body = Body.parse_obj(self.get_body_json())
-
-        # 检查用户是否存在
-        credential = (
-            self.db.query(Credential)
-            .join(Credential.identity)
-            .filter(
-                Identity.uuid == uid, Credential.identifier_type == body.identifier_type
-            )
-            .first()
-        )
-        if not credential:
-            return self.fail(f"指定的用户不存在")
-
-        matched = None
-        for pwd in credential.passwords:
-            if pwd.validate_password(body.old_password):
-                matched = pwd
-                break
-        if not matched:
-            return self.fail("旧密码不匹配")
-        matched.set_password(body.new_password)
-        self.db.commit()
-        return self.success()
-
-
 class UserDetailHandler(APIRequestHandler):
     @has_role(settings.ADMIN_ROLE_CODE)
     def patch(self, uid):
@@ -107,6 +73,7 @@ class UserDetailHandler(APIRequestHandler):
             roles: Optional[List[str]]
             identifiers: Optional[List[IdentifierPair]]
             is_active: Optional[bool]
+            password: Optional[str]
 
         body = Body.parse_obj(self.get_body_json())
 
@@ -115,12 +82,12 @@ class UserDetailHandler(APIRequestHandler):
             return self.fail("指定的用户不存在")
 
         # 更新用户的角色
-        if body.roles:
+        if body.roles is not None:
             roles = self.db.query(Role).filter(Role.code.in_(body.roles))
             identity.roles = roles
 
         # 更新用户identifier信息
-        if body.identifiers:
+        if body.identifiers is not None:
             for pair in body.identifiers:
                 credential = (
                     self.db.query(Credential)
@@ -136,6 +103,13 @@ class UserDetailHandler(APIRequestHandler):
         # 更新用户活动状态
         if body.is_active is not None:
             identity.is_active = body.is_active
+
+        # 更新用户密码
+        # FIXME: 现在会修改用户所有的密码，未来考虑更合适的方式
+        if body.password is not None:
+            for credential in identity.credentials:
+                for pwd in credential.passwords:
+                    pwd.set_password(body.password)
 
         self.db.commit()
         return self.success()
