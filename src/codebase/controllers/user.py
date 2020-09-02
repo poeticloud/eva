@@ -56,10 +56,11 @@ class UserHandler(APIRequestHandler):
                 identity=identity,
             )
             self.db.add(credential)
+            self.db.commit()
             if body.password:
                 password = Password(credential=credential, password=body.password)
                 self.db.add(password)
-        self.db.commit()
+                self.db.commit()
 
         return self.success(data={"uid": str(identity.uuid)})
 
