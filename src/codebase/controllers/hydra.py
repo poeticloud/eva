@@ -2,6 +2,7 @@
 
 import logging
 
+import pydantic
 from sqlalchemy import and_
 
 from codebase.web import APIRequestHandler
@@ -155,47 +156,45 @@ class LoginHandler(BaseHandler):
         self.redirect(url)
 
     async def post(self):
-        body = self.get_body_json()
+        class Req(pydantic.BaseModel):
+            challenge: str
+            identifier: str
+            identifier_type: IdentifierType
+            password: str
 
-        if "challenge" not in body:
-            self.fail("no challenge")
-            return
+        body = Req.parse_obj(self.get_body_json())
 
-        challenge = body["challenge"]
         resp = await hydry_api.get(
-            "/oauth2/auth/requests/login", query_params={"login_challenge": challenge}
+            "/oauth2/auth/requests/login", query_params={"login_challenge": req.challenge}
         )
         logging.info(f"{resp=}")
         if "error" in resp:
-            self.fail(f"交换登录信息失败：{resp}")
-            return
-
-        username = body.get("username")
-        password = body.get("password")
+            return self.fail(f"交换登录信息失败：{resp}")
 
         # 查找用户 (目前仅支持用户名标识符)
         credential = (
             self.db.query(Credential)
             .filter(
                 and_(
-                    Credential.identifier == username,
-                    Credential.identifier_type == IdentifierType.USERNAME,
+                    Credential.identifier == body.identifier,
+                    Credential.identifier_type == body.identifier_type
                 )
             )
             .first()
         )
         if not credential:
-            logging.error("用户 %s 不存在", username)
+            logging.error("用户 %s 不存在", body.identifier)
             return self.fail("用户不存在或密码错误")
 
+        # TODO: 如果用户被禁用等，需要 reject hydry
         if not credential.identity.is_active:
             return self.fail("该用户已被禁用")
 
         for item in credential.passwords:
-            if item.validate_password(password):
+            if item.validate_password(body.password):
                 resp = await hydry_api.put(
                     "/oauth2/auth/requests/login/accept",
-                    query_params={"login_challenge": challenge},
+                    query_params={"login_challenge": body.challenge},
                     body={
                         "subject": str(credential.identity.uuid),
                         "remember": True,
@@ -205,10 +204,7 @@ class LoginHandler(BaseHandler):
                 logging.info(f"{resp=}")
 
                 url = resp.get("redirect_to")
-                self.success(redirect_to=url)
-                return
-
-        # TODO: 如果用户被禁用等，需要 reject hydry
+                return self.success(redirect_to=url)
 
         self.fail("用户不存在或密码错误")
 
