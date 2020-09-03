@@ -205,6 +205,8 @@ class LoginHandler(BaseHandler):
                 logging.info(f"{resp=}")
 
                 url = resp.get("redirect_to")
+                if not url:
+                    return self.fail("系统错误，请刷新重试")
                 return self.success(redirect_to=url)
 
         self.fail("用户不存在或密码错误")
