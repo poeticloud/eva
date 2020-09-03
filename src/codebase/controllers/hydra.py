@@ -198,8 +198,8 @@ class LoginHandler(BaseHandler):
                     query_params={"login_challenge": body.challenge},
                     body={
                         "subject": str(credential.identity.uuid),
-                        "remember": True,
-                        "remember_for": 3600,
+                        "remember": False,
+                        # "remember_for": 3600,
                     },
                 )
                 logging.info(f"{resp=}")
