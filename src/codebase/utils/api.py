@@ -69,7 +69,7 @@ class AsyncApi:
             resp = await http_client.fetch(req, raise_error=False)
             self.request_post(req, resp)
 
-            if resp.code > 400:
+            if resp.code >= 400:
                 logging.error("%s %s : (%s) %s", method, url, resp.error, resp.body)
 
             if self.raw_response:
