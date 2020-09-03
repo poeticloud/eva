@@ -2,6 +2,7 @@
 from typing import List, Optional
 
 import pydantic
+from tornado.web import HTTPError
 
 from codebase.models.authz import Role
 from codebase.web import APIRequestHandler, has_role
@@ -67,8 +68,14 @@ class UserHandler(APIRequestHandler):
 
 
 class UserDetailHandler(APIRequestHandler):
-    @has_role(settings.ADMIN_ROLE_CODE)
+    def has_perm(self, uid):
+        identity = self.get_current_user()
+        return (settings.ADMIN_ROLE_CODE in self._roles) or (identity.uuid == uid)
+
     def patch(self, uid):
+        if not self.has_perm(uid):
+            raise HTTPError(403, reason="没有权限执行该操作")
+
         class Body(pydantic.BaseModel):
             roles: Optional[List[str]]
             identifiers: Optional[List[IdentifierPair]]
@@ -115,6 +122,8 @@ class UserDetailHandler(APIRequestHandler):
         return self.success()
 
     def delete(self, uid):
+        if not self.has_perm(uid):
+            raise HTTPError(403, reason="没有权限执行该操作")
         identity = self.db.query(Identity).filter(Identity.uuid == uid).first()
         if not identity:
             return self.fail("指定的用户不存在")

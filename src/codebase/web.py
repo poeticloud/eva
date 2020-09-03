@@ -167,9 +167,26 @@ def has_role(role_name):
             if not self.current_user:
                 raise HTTPError(403, reason="need authenticated")
             if not self._roles:
-                raise HTTPError(403, reason="no roles")
+                raise HTTPError(403, reason="权限不足")
             if role_name not in self._roles:
-                raise HTTPError(403, reason="role mismatch")
+                raise HTTPError(403, reason="权限不足")
+            return method(self, *args, **kwargs)
+
+        return wrapper
+
+    return f
+
+
+def self_or_has_role(role_name):
+    def f(method):
+        @functools.wraps(method)
+        def wrapper(self, *args, **kwargs):
+            if not self.current_user:
+                raise HTTPError(403, reason="need authenticated")
+            if not self._roles:
+                raise HTTPError(403, reason="权限不足")
+            if role_name not in self._roles:
+                raise HTTPError(403, reason="权限不足")
             return method(self, *args, **kwargs)
 
         return wrapper
