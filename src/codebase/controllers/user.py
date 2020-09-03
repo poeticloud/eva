@@ -83,7 +83,7 @@ class UserDetailHandler(APIRequestHandler):
 
         # 更新用户的角色
         if body.roles is not None:
-            roles = self.db.query(Role).filter(Role.code.in_(body.roles))
+            roles = self.db.query(Role).filter(Role.code.in_(body.roles)).all()
             identity.roles = roles
 
         # 更新用户identifier信息
