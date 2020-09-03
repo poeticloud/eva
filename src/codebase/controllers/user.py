@@ -70,7 +70,7 @@ class UserHandler(APIRequestHandler):
 class UserDetailHandler(APIRequestHandler):
     def has_perm(self, uid):
         identity = self.get_current_user()
-        return (settings.ADMIN_ROLE_CODE in self._roles) or (identity.uuid == uid)
+        return (settings.ADMIN_ROLE_CODE in self._roles) or (str(identity.uuid) == uid)
 
     def patch(self, uid):
         if not self.has_perm(uid):
