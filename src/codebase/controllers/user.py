@@ -127,6 +127,10 @@ class UserDetailHandler(APIRequestHandler):
         identity = self.db.query(Identity).filter(Identity.uuid == uid).first()
         if not identity:
             return self.fail("指定的用户不存在")
+        for credential in identity.credentials:
+            for password in credential.passwords:
+                self.db.delete(password)
+            self.db.delete(credential)
         self.db.delete(identity)
         self.db.commit()
         return self.success()
