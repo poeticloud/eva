@@ -24,7 +24,7 @@ class DBC:
 
     def __init__(self):
         self.db_uri = settings.DB_URI
-        self.engine = create_engine(self.db_uri, echo=False)
+        self.engine = create_engine(self.db_uri, echo=False, pool_recycle=300)
         session_factory = sessionmaker(bind=self.engine)
         self.session = scoped_session(session_factory)
 
