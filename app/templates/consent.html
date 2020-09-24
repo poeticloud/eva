@@ -1,0 +1,40 @@
+<html>
+
+<head>
+    <title>{{ title }}</title>
+</head>
+
+<body>
+<h1>Hydra Consent</h1>
+<h2>requested_scope is</h2>
+
+<form action="/auth/consent" method="POST">
+    <input type="hidden" name="challenge" value="{{ challenge }}"/>
+    <p>
+        Hi {{ user }}, application <strong>{{ client.client_name }}</strong> wants
+        access resources on your behalf and to:
+    </p>
+
+    {% for scope in requested_scope %}
+        <input type="checkbox" id="{{ scope }}" value="{{ scope }}"
+               name="grant_scope"/>
+        <label for="{{ scope }}">{{ scope }}</label><br/>
+    {% endfor %}
+
+    <p>
+        Do you want to be asked next time when this application wants to access
+        your
+        data? The application will not be able to ask for more permissions
+        without
+        your consent.
+    </p>
+
+    <input type="checkbox" id="remember" name="remember" value="1"/>
+    <label for="remember">Do not ask me again</label><br/>
+
+    <input type="submit" id="accept" name="submit" value="Allow access"/>
+    <input type="submit" id="reject" name="submit" value="Deny access"/>
+</form>
+</body>
+
+</html>

@@ -1,0 +1,9 @@
+-r ./production.in
+
+# Testing
+# ------------------------------------------------------------------------------
+pytest             # https://github.com/pytest-dev/pytest
+pytest-sugar       # https://github.com/Frozenball/pytest-sugar
+pytest-cov         # https://github.com/pytest-dev/pytest-cov
+asynctest          # https://github.com/Martiusweb/asynctest/
+Faker
