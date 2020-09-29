@@ -33,27 +33,28 @@ def create_identity(email: str, password: str):
     asyncio.get_event_loop().run_until_complete(do())
 
 
-@cmd.command(help="start pgcli")
+@cmd.command(help="django-like dbshell command use pgcli")
 def dbshell():
     subprocess.call(["pgcli", config.settings.postgres_dsn])
 
 
-@cmd.command()
+@cmd.command(help="django-like shell command use ipython")
 def shell():
     models = Tortoise._discover_models("app.models", "models")  # pylint: disable=protected-access
-    models_names = [model.__name__ for model in models]
+    models_names = ", ".join([model.__name__ for model in models])
     preload_scripts = [
         "from app.main import app",
         "from app.core import config",
         "from tortoise import Tortoise",
-        f'from app.models import {", ".join(models_names)}',
+        f"from app.models import {models_names}",
         "await Tortoise.init(config=config.db_config)",
     ]
-    preload_scripts.extend([f"print('\\n{line}')" for line in preload_scripts])
+    typer.secho("\n".join(preload_scripts), fg=typer.colors.GREEN)
     c = Config()
     c.PrefilterManager.multi_line_specials = True
     c.InteractiveShell.editor = "vim"
     c.InteractiveShellApp.exec_lines = preload_scripts
+    c.TerminalIPythonApp.display_banner = False
     IPython.start_ipython(argv=[], config=c)
 
 
