@@ -17,24 +17,20 @@ class TimestampModelMixin:
     updated_at = fields.DatetimeField(auto_now=True)
 
 
-class User(TimestampModelMixin, models.Model):
+class Identity(TimestampModelMixin, models.Model):
     """用户 """
 
     id = fields.BigIntField(pk=True)
     uuid = fields.UUIDField(default=uuid.uuid4, unique=True)
-    name = fields.CharField(max_length=20)
     roles: M2m["Role"] = fields.ManyToManyField("models.Role", related_name="identities")
-    is_superuser = fields.BooleanField(default=False, description="是否超级管理员")
     is_active = fields.BooleanField(default=True)
 
     credentials: Rv["Credential"]
 
     class Meta:
-        table = "eva_user"
+        table = "eva_identity"
 
-    async def has_perm(self, code: str):
-        if self.is_superuser:
-            return True
+    async def has_perm(self, code: str) -> bool:
         await self.fetch_related("roles__permissions")
         for role in self.roles:
             for permission in role.permissions:
@@ -74,9 +70,7 @@ class IdP(TimestampModelMixin, models.Model):
 
 class Credential(TimestampModelMixin, models.Model):
     """凭证
-
     如：用户名、邮箱、手机号
-
     凭证 + 验证方式 -> 验证身份（identify）
 
     验证方案如：
@@ -99,7 +93,9 @@ class Credential(TimestampModelMixin, models.Model):
     identifier_type = fields.CharEnumField(IdentifierType, description="identifier 的类型，如用户名只能对应密码认证；邮件和手机号可以有其对应的验证码认证")
 
     # 一个身份可以关联多个凭证
-    user: Fk["User"] = fields.ForeignKeyField("models.User", ondelete=fields.CASCADE, related_name="credentials")
+    identity: Fk["Identity"] = fields.ForeignKeyField(
+        "models.Identity", ondelete=fields.CASCADE, related_name="credentials"
+    )
     idp: Fkn["IdP"] = fields.ForeignKeyField("models.IdP", on_delete=fields.CASCADE, null=True)
 
     passwords: Rv["Password"]
@@ -107,7 +103,7 @@ class Credential(TimestampModelMixin, models.Model):
 
     class Meta:
         table = "eva_credential"
-        unique_together = ("user_id", "identifier_type")
+        unique_together = ("identity", "identifier")
 
 
 class Password(TimestampModelMixin, models.Model):
@@ -181,12 +177,11 @@ class Role(TimestampModelMixin, models.Model):
 
     id = fields.BigIntField(pk=True)
     code = fields.CharField(max_length=128, unique=True)
-    name = fields.CharField(max_length=128, unique=True)
-    summary = fields.CharField(max_length=255, null=True)
+    name = fields.CharField(max_length=128)
     description = fields.TextField(null=True)
     permissions: M2m["Permission"] = fields.ManyToManyField("models.Permission", related_name="roles")
 
-    users: Rv["User"]
+    identities: Rv["Identity"]
 
     class Meta:
         table = "eva_role"
@@ -200,7 +195,6 @@ class Permission(TimestampModelMixin, models.Model):
     id = fields.BigIntField(pk=True)
     code = fields.CharField(max_length=128, unique=True)
     name = fields.CharField(max_length=128, unique=True)
-    summary = fields.CharField(max_length=255, null=True)
     description = fields.TextField(null=True)
 
     roles: Rv["Role"]

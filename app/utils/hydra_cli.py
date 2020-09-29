@@ -2,13 +2,15 @@ from typing import List, Optional
 
 from httpx import AsyncClient
 
-
-async def hydra_client(base_url: str = "http://localhost:4445") -> AsyncClient:
-    async with AsyncClient(base_url=base_url) as client:
-        yield HydraClient(client)
+from app.core import config
 
 
-class HydraClient:
+async def hydra_admin() -> AsyncClient:
+    async with AsyncClient(base_url=config.settings.hydra_admin_host) as client:
+        yield HydraAdmin(client)
+
+
+class HydraAdmin:
     def __init__(self, client: AsyncClient):
         self.client = client
 

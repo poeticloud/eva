@@ -6,15 +6,19 @@ from starlette.responses import RedirectResponse
 from starlette.templating import Jinja2Templates
 
 from app.models import Credential
-from app.utils.hydra_cli import HydraClient, hydra_client
+from app.utils.hydra_cli import HydraAdmin, hydra_admin
 
 templates = Jinja2Templates(directory="app/templates")
 
 router = APIRouter()
 
 
-@router.get("/auth/login")
-async def login(request: Request, login_challenge: str, hydra_cli: HydraClient = Depends(hydra_client)):
+@router.get("/auth/login", tags=["OAuth"])
+async def login(
+    request: Request,
+    login_challenge: str,
+    hydra_cli: HydraAdmin = Depends(hydra_admin),
+):
     get_login_resp = await hydra_cli.get_login_request(challenge=login_challenge)
     # If hydra was already able to authenticate the user, skip will be true and we do not need to re-authenticate
     # the user.
@@ -28,23 +32,24 @@ async def login(request: Request, login_challenge: str, hydra_cli: HydraClient =
     return templates.TemplateResponse("login.html", context={"challenge": login_challenge, "request": request})
 
 
-@router.post("/auth/login")
+@router.post("/auth/login", tags=["OAuth"])
 async def accept_login(
     request: Request,
-    email: str = Form(...),
+    identifier_type: Credential.IdentifierType = Form(...),
+    identifier: str = Form(...),
     password: str = Form(...),
     remember: bool = Form(False),
     challenge: str = Form(...),
-    hydra_cli: HydraClient = Depends(hydra_client),
+    hydra_cli: HydraAdmin = Depends(hydra_admin),
 ):  # pylint: disable=too-many-arguments
-    credential = await Credential.filter(identifier_type=Credential.IdentifierType.EMAIL, identifier=email).first()
+    credential = await Credential.filter(identifier_type=identifier_type, identifier=identifier).first()
     if not credential:
         return templates.TemplateResponse(
             "login.html",
             context={
                 "request": request,
                 "challenge": challenge,
-                "error": "The email / password combination is not correct",
+                "error": "The identifier / password combination is not correct",
             },
         )
     succeed = True
@@ -61,21 +66,27 @@ async def accept_login(
                 "request": request,
             },
         )
-
+    await credential.fetch_related("identity")
     resp = await hydra_cli.accept_login_request(
-        challenge=challenge, subject="1@2.com", remember=remember, remember_for=3600
+        challenge=challenge,
+        subject=str(credential.identity.uuid),
+        remember=remember,
+        remember_for=3600,
     )
-    print(resp)
+
     return RedirectResponse(resp["redirect_to"])
 
 
-@router.get("/auth/consent")
-async def consent(request: Request, consent_challenge: str, hydra_cli: HydraClient = Depends(hydra_client)):
+@router.get("/auth/consent", tags=["OAuth"])
+async def consent(
+    request: Request,
+    consent_challenge: str,
+    hydra_cli: HydraAdmin = Depends(hydra_admin),
+):
     resp = await hydra_cli.get_consent_request(challenge=consent_challenge)
     if resp["skip"]:
         grant_scope = resp["requested_scope"]
         grant_access_token_audience = resp["requested_access_token_audience"]
-        print(resp)
         resp = await hydra_cli.accept_consent_request(
             challenge=consent_challenge,
             grant_scope=grant_scope,
@@ -94,13 +105,13 @@ async def consent(request: Request, consent_challenge: str, hydra_cli: HydraClie
     )
 
 
-@router.post("/auth/consent")
+@router.post("/auth/consent", tags=["OAuth"])
 async def accept_consent(
     challenge: str = Form(...),
-    grant_scope: List[str] = Form(...),
-    remember: bool = Form(...),
+    grant_scope: List[str] = Form([]),
+    remember: bool = Form(False),
     submit: str = Form(False),
-    hydra_cli: HydraClient = Depends(hydra_client),
+    hydra_cli: HydraAdmin = Depends(hydra_admin),
 ):
     if submit == "Deny access":
         resp = await hydra_cli.reject_consent_request(
@@ -111,12 +122,10 @@ async def accept_consent(
         return RedirectResponse(resp["redirect_to"])
 
     resp = await hydra_cli.get_consent_request(challenge=challenge)
-    print(resp)
     resp = await hydra_cli.accept_consent_request(
         challenge=challenge,
         grant_scope=grant_scope,
         remember=remember,
         grant_access_token_audience=resp["requested_access_token_audience"],
     )
-    print(resp)
     return RedirectResponse(resp["redirect_to"])

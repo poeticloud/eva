@@ -27,11 +27,11 @@ migrate: ; $(info $(M) migrate) @ ## 执行迁移
 	$Q aerich upgrade
 
 .PHONY: lint
-lint: ; $(info $(M) prospector) @ ## 执行迁移
+lint: ; $(info $(M) prospector) @ ## Run Linter
 	$Q prospector app
 
 .PHONY: test
-test: ; $(info $(M) test) @ ## 执行迁移
+test: ; $(info $(M) test) @ ## Run pytest
 	$Q pytest --cov
 
 .PHONY: dep

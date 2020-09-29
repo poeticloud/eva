@@ -10,7 +10,11 @@ import asyncpg
 import sys
 
 async def run():
-    await asyncpg.connect(dsn="${POSTGRES_DSN}")
+    conn = await asyncpg.connect(dsn="${POSTGRES_DSN}")
+    try:
+        await conn.execute("CREATE DATABASE hydra")
+    except Exception as e:
+        pass
 
 loop = asyncio.get_event_loop()
 try:

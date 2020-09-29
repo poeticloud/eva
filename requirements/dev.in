@@ -11,3 +11,4 @@ prospector         # https://github.com/PyCQA/prospector
 # ------------------------------------------------------------------------------
 ipython
 pip-tools
+pgcli

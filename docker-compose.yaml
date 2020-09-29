@@ -1,37 +1,62 @@
 version: '3'
 
 volumes:
-    local_postgres_data: {}
+  local_postgres_data: { }
 
 services:
-    # app:
-    #     build:
-    #         context: .
-    #         dockerfile: Dockerfile
-    #     image: app_local
-    #     restart: always
-    #     depends_on:
-    #         - postgres
-    #     volumes:
-    #         - .:/work
-    #     environment:
-    #         - POSTGRES_DSN=postgres://postgres:galaxy@postgres:5432/galaxy
-    #         - SENTRY_DSN=https://4191639452fc45deb6259e1d1992a9a4@o418626.ingest.sentry.io/5423877
-    #     ports:
-    #       - 5000:8000
-    #     command:
-    #         - uvicorn
-    #         - app.main:app
-    #         - --reload
-    #         - --host=0.0.0.0
-    #         - --port=8000
+  eva:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: app_local
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    volumes:
+      - .:/work
+    environment:
+      - POSTGRES_DSN=postgres://eva:eva@postgres:5432/eva
+      - POSTGRES_DSN_TEST=postgres://eva:eva@postgres:5432/eva_{}
+      - SENTRY_DSN=https://4a4fe3971a594a019b45da4b9ee49c65@sentry.poeticloud.com/5
+      - HYDRA_ADMIN_HOST=http://hydra:4445
+    ports:
+      - 8000:8000
+    command:
+      - uvicorn
+      - app.main:app
+      - --reload
+      - --host=0.0.0.0
+      - --port=8000
 
-    postgres:
-        image: postgres:13-alpine
-        ports:
-            - 15432:5432
-        # volumes:
-        #     - local_postgres_data:/var/lib/postgresql/data
-        environment:
-            - POSTGRES_PASSWORD=eva
-            - POSTGRES_DB=eva
+  postgres:
+    image: postgres:13-alpine
+    ports:
+      - 15432:5432
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=eva
+      - POSTGRES_PASSWORD=eva
+      - POSTGRES_DB=eva
+
+  hydra:
+    image: oryd/hydra:v1.7.4
+    depends_on:
+      - eva
+    ports:
+      - "4444:4444" # Public port
+      # - "4445:4445" # Admin port
+      - "5555:5555" # Port for hydra token user
+    environment:
+      - URLS_SELF_ISSUER=http://127.0.0.1:4444
+      - URLS_CONSENT=http://127.0.0.1:8000/auth/consent
+      - URLS_LOGIN=http://127.0.0.1:8000/auth/login
+      - URLS_LOGOUT=http://127.0.0.1:8000/auth/logout
+      - DSN=postgres://eva:eva@postgres:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4
+      - SECRETS_SYSTEM=youReallyNeedToChangeThis
+      - OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES=public,pairwise
+      - OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT=youReallyNeedToChangeThis
+      - SERVE_COOKIES_SAME_SITE_MODE=Lax
+    restart: unless-stopped
+    command:
+      serve all --dangerous-force-http
