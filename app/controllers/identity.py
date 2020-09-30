@@ -89,12 +89,13 @@ async def update_identity_credential(uuid: UUID, body: List[CredentialCreate]):
 @router.put("/identity/{uuid}/role", response_model=schemas.IdentityDetail, tags=["Identity Management"])
 async def update_identity_role(uuid: UUID, role_codes: List[str] = Body(..., title="role codes")):
     identity = await Identity.get(uuid=uuid)
+
     old_roles = set(await identity.roles.all())
     new_roles = set(await Role.filter(code__in=role_codes).all())
     with transactions.in_transaction():
         await identity.roles.remove(*(old_roles - new_roles))
         await identity.roles.add(*(new_roles - old_roles))
-    return await schemas.IdentityDetail.from_uuid(identity.uuid)
+    return schemas.IdentityDetail.from_orm(identity)
 
 
 @router.get("/role", response_model=PaginationResult[schemas.RoleSimple], tags=["Role Management"])
@@ -150,6 +151,12 @@ async def create_permission(body: schemas.PermissionCreate):
         raise EvaException(message="provided permission code already exists")
     permission = Permission(**body.dict())
     await permission.save()
+    return schemas.PermissionDetail.from_orm(permission)
+
+
+@router.get("/permission/{permission_code}", response_model=schemas.PermissionDetail, tags=["Permission Management"])
+async def retrieve_permission(permission_code: str):
+    permission = await Permission.get(code=permission_code)
     return schemas.PermissionDetail.from_orm(permission)
 
 
