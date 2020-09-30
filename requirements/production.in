@@ -1,0 +1,23 @@
+# Core
+# ------------------------------------------------------------------------------
+fastapi            # https://github.com/tiangolo/fastapi
+pydantic           # https://github.com/samuelcolvin/pydantic
+requests           # https://github.com/psf/requests
+uvicorn            # https://github.com/encode/uvicorn
+gunicorn           # https://github.com/benoitc/gunicorn
+
+httpx
+jinja2
+argon2-cffi
+python-multipart
+typer
+
+# Database
+# ------------------------------------------------------------------------------
+asyncpg            # https://github.com/MagicStack/asyncpg
+tortoise-orm       # https://github.com/tortoise/tortoise-orm
+aerich             # https://github.com/long2ice/aerich
+
+# Sentry
+# ------------------------------------------------------------------------------
+sentry-sdk         # https://github.com/getsentry/sentry-python

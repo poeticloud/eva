@@ -1,18 +1,27 @@
-FROM python:3.8
+FROM python:3.8-slim
 
-ENV PYTHONIOENCODING=utf-8
-ENV PYTHONPATH=/work
-ENV PATH /usr/local/bin:$PATH
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE 1
 
-COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt \
-  && python3 -m compileall /work
-COPY src /work
+COPY requirements/production.txt /tmp/requirements.txt
 
-VOLUME /data
+RUN set -ex \
+    && sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list \
+    && sed -i "s/security.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends vim \
+    && pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r /tmp/requirements.txt \
+    && apt-get clean autoclean \
+    && rm -rf /var/cache/apk/* /tmp/* /var/tmp/* $HOME/.cache /var/lib/apt/lists/* /var/lib/{apt,dpkg,cache,log}/
+
+COPY scripts /scripts
+RUN chmod +x /scripts/*
+
+COPY app /work/app
+COPY aerich.ini /work/
+
 WORKDIR /work
 
-EXPOSE 3000
+ENTRYPOINT ["/scripts/entrypoint.sh"]
 
-CMD ["python3", "-u", "server.py"]
-# test
+CMD ["/scripts/start-production.sh"]

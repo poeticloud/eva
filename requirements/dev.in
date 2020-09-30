@@ -1,0 +1,13 @@
+-r ./test.in
+
+# Code quality
+# ------------------------------------------------------------------------------
+black              # https://github.com/ambv/black
+pre-commit         # https://github.com/pre-commit/pre-commit
+prospector         # https://github.com/PyCQA/prospector
+
+# Tools
+# ------------------------------------------------------------------------------
+ipython
+pip-tools
+pgcli
