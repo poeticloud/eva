@@ -23,6 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        ls
         pip install -r requirements/test.txt
     - name: Lint
       run: |
