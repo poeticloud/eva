@@ -4,7 +4,6 @@ import subprocess
 import typer
 import uvicorn
 from tortoise import Tortoise, transactions
-from traitlets.config import Config
 
 from app.core import config
 from app.models import Credential, Identity, Password
@@ -58,6 +57,7 @@ def dbshell():
 def shell():
     try:
         import IPython  # pylint: disable=import-outside-toplevel
+        from traitlets.config import Config  # pylint: disable=import-outside-toplevel
     except ImportError:
         return
 
