@@ -18,7 +18,7 @@ def runserver(host: str = "127.0.0.1", port: int = 8000, reload: bool = True):
 
 @cmd.command()
 def test():
-    subprocess.call(["pytest", "--cov", "--disable-warnings", "-v"])
+    subprocess.call(["pytest", "--cov", "--disable-warnings", "-v", "--cov-report=xml"])
     subprocess.call(["coverage", "html"])
 
 
