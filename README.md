@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/poeticloud/eva/branch/master/graph/badge.svg)](https://codecov.io/gh/poeticloud/eva)
+
 # eva
 
 Open Identity Management
