@@ -61,65 +61,67 @@ Open Identity Management
 ```
 
 ## 2. 项目主要依赖
+
 > Core
-- [fastapi](https://github.com/tiangolo/fastapi) API framework
-- [pydantic](https://github.com/samuelcolvin/pydantic) Data model Serialize/Deserialize/Validation, Settings Management
-- [uvicorn](https://github.com/encode/uvicorn) ASGI server
-- [typer](https://typer.tiangolo.com) CLI generator Based on Python type hints
-- [tortoise-orm](https://github.com/tortoise/tortoise-orm) async ORM
-- [aerich](https://github.com/long2ice/aerich) tortoise-orm migration manage tool
 
-> Core Quality
-- [prospector](https://github.com/PyCQA/prospector) Linter
-- [pre-commit](https://github.com/pre-commit/pre-commit) managing git `pre-commit` hooks
-- [black](https://github.com/ambv/black) code formatter
-- [isort](https://pycqa.github.io/isort) code formatter
+-   [fastapi](https://github.com/tiangolo/fastapi) API framework
+-   [pydantic](https://github.com/samuelcolvin/pydantic) Data model Serialize/Deserialize/Validation, Settings Management
+-   [uvicorn](https://github.com/encode/uvicorn) ASGI server
+-   [typer](https://typer.tiangolo.com) CLI generator Based on Python type hints
+-   [tortoise-orm](https://github.com/tortoise/tortoise-orm) async ORM
+-   [aerich](https://github.com/long2ice/aerich) tortoise-orm migration manage tool
 
+> Code Quality
 
+-   [prospector](https://github.com/PyCQA/prospector) Linter
+-   [pre-commit](https://github.com/pre-commit/pre-commit) managing git `pre-commit` hooks
+-   [black](https://github.com/ambv/black) code formatter
+-   [isort](https://pycqa.github.io/isort) code formatter
 
 ## 3. 本地开发环境配置
 
 1. 克隆代码至本地
 
-2. 创建一个新的虚拟环境（Conda / Virtualenv等工具）版本要求 >= 3.8：
-   1. `pip install -r requirements/dev.txt`
-   2. 安装pre-commit hooks `pre-commit install`
+2. 创建一个新的虚拟环境（Conda / Virtualenv 等工具）版本要求 >= 3.8：
 
-3. 使用 docker-compose启动：
-   1. 第一次执行 `docker-compose -f docker-compose.yml -f docker-compose-migrate.yml up -d`
-   2. 后续开发只需要执行 `docker-compose up -d`
-   3. `scripts/entrypoint.sh`脚本中会初始化好hydra数据库
+    1. `pip install -r requirements/dev.txt`
+    2. 安装 pre-commit hooks `pre-commit install`
+
+3. 使用 docker-compose 启动：
+
+    1. 第一次执行 `docker-compose -f docker-compose.yml -f docker-compose-migrate.yml up -d`
+    2. 后续开发只需要执行 `docker-compose up -d`
+    3. `scripts/entrypoint.sh`脚本中会初始化好 hydra 数据库
 
 4. 虚拟环境中直接启动
 
-   1. `uvicorn app.main:app --reload` 或者直接执行 `make run`
+    1. `uvicorn app.main:app --reload` 或者直接执行 `make run`
 
-5. 执行lint
+5. 执行 lint
 
-   ```shell
-   make lint
-   ```
+    ```shell
+    make lint
+    ```
 
-6. 执行test
+6. 执行 test
 
-   ```shell
-   make test
-   ```
-
-
+    ```shell
+    make test
+    ```
 
 Tips:
 
 > 1. python manage.py createuser 创建一个用户
-> 2. python manage.py dbshell 执行pgcli，进入代码配置好的数据库环境
+> 2. python manage.py dbshell 执行 pgcli，进入代码配置好的数据库环境
 
 ## 4. 数据库管理
 
-1. 在migrations目录中生成迁移文件
+1. 在 migrations 目录中生成迁移文件
 
 ```shell
 make makemigrations
 ```
+
 2. 应用、执行迁移脚本
 
 ```shell

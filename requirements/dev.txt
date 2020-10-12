@@ -29,12 +29,12 @@ dodgy==0.2.1              # via prospector
 fastapi==0.61.1           # via -r requirements/././production.in
 filelock==3.0.12          # via virtualenv
 flake8-polyfill==1.0.2    # via pep8-naming
-flake8==3.8.3             # via flake8-polyfill
+flake8==3.8.4             # via flake8-polyfill
 gunicorn==20.0.4          # via -r requirements/././production.in
-h11==0.9.0                # via httpcore, uvicorn
-httpcore==0.11.1          # via httpx
-httpx==0.15.4             # via -r requirements/././production.in
-humanize==2.6.0           # via pgcli
+h11==0.11.0               # via httpcore, uvicorn
+httpcore==0.12.0          # via httpx
+httpx==0.16.0             # via -r requirements/././production.in
+humanize==3.0.1           # via pgcli
 identify==1.5.5           # via pre-commit
 idna==2.10                # via requests, rfc3986
 iniconfig==1.0.1          # via pytest
@@ -80,7 +80,7 @@ pyparsing==2.4.7          # via packaging
 pypika==0.42.1            # via tortoise-orm
 pytest-cov==2.10.1        # via -r requirements/./test.in
 pytest-sugar==0.9.4       # via -r requirements/./test.in
-pytest==6.1.0             # via -r requirements/./test.in, pytest-cov, pytest-sugar
+pytest==6.1.1             # via -r requirements/./test.in, pytest-cov, pytest-sugar
 python-multipart==0.0.5   # via -r requirements/././production.in
 pyyaml==5.3.1             # via pre-commit, prospector
 regex==2020.9.27          # via black
@@ -105,8 +105,8 @@ typed-ast==1.4.1          # via black
 typer==0.3.2              # via -r requirements/././production.in
 typing-extensions==3.7.4.3  # via aiosqlite, black, tortoise-orm
 urllib3==1.25.10          # via requests, sentry-sdk
-uvicorn==0.12.0           # via -r requirements/././production.in
-virtualenv==20.0.31       # via pre-commit
+uvicorn==0.12.1           # via -r requirements/././production.in
+virtualenv==20.0.33       # via pre-commit
 wcwidth==0.2.5            # via prompt-toolkit, tabulate
 wrapt==1.12.1             # via astroid
 

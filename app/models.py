@@ -123,11 +123,7 @@ class Password(TimestampModelMixin, models.Model):
     def from_raw(
         cls, credential: Credential, raw_password: str, permanent=config.settings.password_permanent
     ) -> "Password":
-        if permanent:
-            expires_at = None
-        else:
-            expires_at = datetime.utcnow() + config.settings.password_age
-
+        expires_at = None if permanent else datetime.utcnow() + config.settings.password_age
         return Password(credential=credential, shadow=encrypt.encrypt_password(raw_password), expires_at=expires_at)
 
     @property
@@ -194,7 +190,7 @@ class Permission(TimestampModelMixin, models.Model):
 
     id = fields.BigIntField(pk=True)
     code = fields.CharField(max_length=128, unique=True)
-    name = fields.CharField(max_length=128, unique=True)
+    name = fields.CharField(max_length=128)
     description = fields.TextField(null=True)
 
     roles: Rv["Role"]

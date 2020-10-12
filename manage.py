@@ -1,8 +1,8 @@
 import asyncio
 import subprocess
 
-import IPython
 import typer
+import uvicorn
 from tortoise import Tortoise, transactions
 from traitlets.config import Config
 
@@ -10,6 +10,22 @@ from app.core import config
 from app.models import Credential, Identity, Password
 
 cmd = typer.Typer()
+
+
+@cmd.command()
+def runserver(host: str = "127.0.0.1", port: int = 8000, reload: bool = True):
+    uvicorn.run("app.main:app", reload=reload, host=host, port=port)
+
+
+@cmd.command()
+def test():
+    subprocess.call(["pytest", "--cov", "--disable-warnings", "-v"])
+    subprocess.call(["coverage", "html"])
+
+
+@cmd.command()
+def lint():
+    subprocess.call(["prospector", "app"])
 
 
 @cmd.command(help="create identity")
@@ -40,6 +56,11 @@ def dbshell():
 
 @cmd.command(help="django-like shell command use ipython")
 def shell():
+    try:
+        import IPython  # pylint: disable=import-outside-toplevel
+    except ImportError:
+        return
+
     models = Tortoise._discover_models("app.models", "models")  # pylint: disable=protected-access
     models_names = ", ".join([model.__name__ for model in models])
     preload_scripts = [
@@ -56,11 +77,6 @@ def shell():
     c.InteractiveShellApp.exec_lines = preload_scripts
     c.TerminalIPythonApp.display_banner = False
     IPython.start_ipython(argv=[], config=c)
-
-
-@cmd.command()
-def init_db():
-    print("do something")
 
 
 if __name__ == "__main__":
