@@ -55,13 +55,13 @@ async def does_not_exist_exception_handler(_: Request, exc: DoesNotExist):
 
 
 @app.exception_handler(IntegrityError)
-async def integrity_error_exception_handler(_: Request, exc: IntegrityError):
+async def integrity_error_exception_handler(_: Request, exc: IntegrityError):  # pragma: no cover
     return JSONResponse(status_code=422, content={"detail": [{"loc": [], "msg": str(exc), "type": "IntegrityError"}]})
 
 
-if config.settings.env != "local":
+if config.settings.env != "local":  # pragma: no cover
     sentry_sdk.init(dsn=config.settings.sentry_dsn, environment=config.settings.env)
     app.add_middleware(SentryAsgiMiddleware)
 
-if not sys.argv[0].endswith("pytest"):
+if sys.argv == ["manage.py", "runserver"] or sys.argv[0].endswith("gunicorn"):  # pragma: no cover
     register_tortoise(app, config=config.db_config)
