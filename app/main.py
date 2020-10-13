@@ -64,4 +64,5 @@ if config.settings.env != "local":  # pragma: no cover
     app.add_middleware(SentryAsgiMiddleware)
 
 if sys.argv == ["manage.py", "runserver"] or sys.argv[0].endswith("gunicorn"):  # pragma: no cover
+    logging.info("connecting to database...")
     register_tortoise(app, config=config.db_config)
