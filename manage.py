@@ -11,7 +11,7 @@ from app.models import Credential, Identity, Password
 cmd = typer.Typer()
 
 
-@cmd.command()
+@cmd.command(help="run develop server using uvicorn")
 def runserver(host: str = "127.0.0.1", port: int = 8000, reload: bool = True):
     uvicorn.run("app.main:app", reload=reload, host=host, port=port)
 
@@ -26,7 +26,7 @@ def migrate():
     subprocess.call(["aerich", "upgrade"])
 
 
-@cmd.command()
+@cmd.command(help="update all dependencies' versions and apply in requirements folder")
 def update_dep():
     files = [
         "requirements/production.in",
@@ -48,13 +48,13 @@ def update_dep():
         )
 
 
-@cmd.command()
+@cmd.command(help="test")
 def test():
     subprocess.call(["pytest", "--disable-warnings", "-v", "--cov=./", "--cov-report=xml"])
     subprocess.call(["coverage", "html"])
 
 
-@cmd.command()
+@cmd.command(help="lint")
 def lint():
     subprocess.call(["prospector", "app"])
 
