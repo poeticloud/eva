@@ -3,7 +3,7 @@
 fastapi            # https://github.com/tiangolo/fastapi
 pydantic           # https://github.com/samuelcolvin/pydantic
 requests           # https://github.com/psf/requests
-uvicorn            # https://github.com/encode/uvicorn
+uvicorn[standard]  # https://github.com/encode/uvicorn
 gunicorn           # https://github.com/benoitc/gunicorn
 
 httpx

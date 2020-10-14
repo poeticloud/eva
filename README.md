@@ -98,7 +98,8 @@ Open Identity Management
 
 4. 虚拟环境中直接启动
 
-    1. `uvicorn app.main:app --reload` 或者直接执行 `make run`
+    1. aerich upgrade
+    2. python manage.py runserver
 
 5. 执行 lint
 
