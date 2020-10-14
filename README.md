@@ -3,7 +3,7 @@
 
 # eva
 
-Open Identity Management1
+Open Identity Management
 
 ## 1. 项目结构说明
 
