@@ -16,6 +16,38 @@ def runserver(host: str = "127.0.0.1", port: int = 8000, reload: bool = True):
     uvicorn.run("app.main:app", reload=reload, host=host, port=port)
 
 
+@cmd.command(help="generate migration files")
+def makemigrations():
+    subprocess.call(["aerich", "migrate"])
+
+
+@cmd.command(help="do database migrate")
+def migrate():
+    subprocess.call(["aerich", "upgrade"])
+
+
+@cmd.command()
+def update_dep():
+    files = [
+        "requirements/production.in",
+        "requirements/test.in",
+        "requirements/dev.in",
+    ]
+    for file in files:
+        subprocess.call(
+            [
+                "pip-compile",
+                file,
+                "--no-emit-index-url",
+                "-U",
+                "-i",
+                "https://mirrors.aliyun.com/pypi/simple/",
+                "-o",
+                file.replace(".in", ".txt"),
+            ]
+        )
+
+
 @cmd.command()
 def test():
     subprocess.call(["pytest", "--disable-warnings", "-v", "--cov=./", "--cov-report=xml"])

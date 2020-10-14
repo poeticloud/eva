@@ -45,7 +45,6 @@ Open Identity Management
 ├── docker-compose.yaml                        # 开发用docker-compose file
 ├── Dockerfile                                 # 开发环境Dockerfile
 ├── LICENSE
-├── Makefile
 ├── manage.py                                  # 模拟Django的manage.py，执行一些临时脚本等
 ├── pyproject.toml                             # black isort pytest 等配置信息
 ├── README.md
@@ -98,7 +97,7 @@ Open Identity Management
 
 4. 虚拟环境中直接启动
 
-    1. aerich upgrade
+    1. python manage.py migrate
     2. python manage.py runserver
 
 5. 执行 lint
@@ -123,13 +122,13 @@ Tips:
 1. 在 migrations 目录中生成迁移文件
 
 ```shell
-make makemigrations
+python manage.py makemigrations
 ```
 
 2. 应用、执行迁移脚本
 
 ```shell
-make migrate
+python manage.py migrate
 ```
 
 # 附
