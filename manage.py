@@ -60,22 +60,20 @@ def lint():
 
 
 @cmd.command(help="create identity")
-def create_identity(email: str, password: str):
+def create_identity(identifier_type: Credential.IdentifierType, identifier: str, password: str):
     async def do():
         await Tortoise.init(config=config.db_config)
         async with transactions.in_transaction() as tx:
-            if await Credential.filter(identifier_type=Credential.IdentifierType.EMAIL, identifier=email).exists():
+            if await Credential.filter(identifier_type=identifier_type, identifier=identifier).exists():
                 await tx.rollback()
-                return typer.secho(f"credential with {email=} already exists", fg=typer.colors.RED)
+                return typer.secho("provided credential already exists", fg=typer.colors.RED)
 
             identity = Identity()
             await identity.save()
-            credential = Credential(
-                identity=identity, identifier_type=Credential.IdentifierType.EMAIL, identifier=email
-            )
+            credential = Credential(identity=identity, identifier_type=identifier_type, identifier=identifier)
             await credential.save()
             await Password.from_raw(credential=credential, raw_password=password).save()
-            typer.secho(f"identity created successfully! uuid: {identity.uuid}", fg=typer.colors.GREEN)
+            typer.secho(f"identity create successfully!\nuuid: {identity.uuid}", fg=typer.colors.GREEN)
 
     asyncio.get_event_loop().run_until_complete(do())
 

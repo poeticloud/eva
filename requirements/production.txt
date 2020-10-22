@@ -8,10 +8,12 @@ aerich==0.3.2             # via -r requirements/production.in
 aiosqlite==0.15.0         # via tortoise-orm
 argon2-cffi==20.1.0       # via -r requirements/production.in
 asyncpg==0.21.0           # via -r requirements/production.in
+authlib==0.15.2           # via -r requirements/production.in
 certifi==2020.6.20        # via httpx, requests, sentry-sdk
-cffi==1.14.3              # via argon2-cffi
+cffi==1.14.3              # via argon2-cffi, cryptography
 chardet==3.0.4            # via requests
 click==7.1.2              # via aerich, typer, uvicorn
+cryptography==3.1.1       # via authlib
 fastapi==0.61.1           # via -r requirements/production.in
 gunicorn==20.0.4          # via -r requirements/production.in
 h11==0.11.0               # via httpcore, uvicorn
@@ -31,7 +33,7 @@ pyyaml==5.3.1             # via uvicorn
 requests==2.24.0          # via -r requirements/production.in
 rfc3986[idna2008]==1.4.0  # via httpx
 sentry-sdk==0.19.1        # via -r requirements/production.in
-six==1.15.0               # via argon2-cffi, python-multipart
+six==1.15.0               # via argon2-cffi, cryptography, python-multipart
 sniffio==1.2.0            # via httpcore, httpx
 starlette==0.13.6         # via fastapi
 tortoise-orm==0.16.16     # via -r requirements/production.in, aerich

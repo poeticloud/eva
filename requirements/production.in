@@ -11,6 +11,7 @@ jinja2
 argon2-cffi
 python-multipart
 typer
+authlib
 
 # Database
 # ------------------------------------------------------------------------------

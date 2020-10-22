@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 from uuid import UUID
 
 import pydantic
@@ -114,3 +114,22 @@ class IdentityDetail(Schema):
                 for credential in identity.credentials
             ],
         )
+
+
+class JSONWenKeySet(Schema):
+    keys: List[Dict[str, str]]
+
+
+class TokenObtain(Schema):
+    identifier_type: Credential.IdentifierType
+    identifier: str
+    password: str
+
+
+class AccessToken(Schema):
+    access_token: str
+    refresh_token: str
+
+
+class RefreshToken(Schema):
+    refresh_token: str

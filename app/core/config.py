@@ -1,7 +1,8 @@
 from datetime import timedelta
-from typing import Optional
+from typing import List, Optional, Union
 
-from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn
+from authlib.jose import RSAKey
+from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, SecretStr
 from tortoise import generate_config
 
 
@@ -23,6 +24,12 @@ class Settings(BaseSettings):
 
     hydra_admin_host: AnyHttpUrl = "http://localhost:4445"
     hydra_public_host: AnyHttpUrl = "http://localhost:4444"
+
+    jwt_audience: Optional[List[str]]
+    jwt_issuer: Optional[str]
+    jwt_access_token_expires: Union[bool, timedelta] = timedelta(hours=2)
+    jwt_refresh_token_expires: Union[bool, timedelta] = timedelta(days=7)
+    jwt_private_key: SecretStr = RSAKey.generate_key(is_private=True).as_pem(is_private=True)
 
 
 settings = Settings()

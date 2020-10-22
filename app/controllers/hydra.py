@@ -13,7 +13,7 @@ templates = Jinja2Templates(directory="app/templates")
 router = APIRouter()
 
 
-@router.get("/auth/login", tags=["OAuth"])
+@router.get("/login")
 async def login(
     request: Request,
     login_challenge: str,
@@ -32,7 +32,7 @@ async def login(
     return templates.TemplateResponse("login.html", context={"challenge": login_challenge, "request": request})
 
 
-@router.post("/auth/login", tags=["OAuth"])
+@router.post("/login")
 async def accept_login(
     request: Request,
     identifier_type: Credential.IdentifierType = Form(...),
@@ -77,7 +77,7 @@ async def accept_login(
     return RedirectResponse(resp["redirect_to"])
 
 
-@router.get("/auth/consent", tags=["OAuth"])
+@router.get("/consent")
 async def consent(
     request: Request,
     consent_challenge: str,
@@ -105,7 +105,7 @@ async def consent(
     )
 
 
-@router.post("/auth/consent", tags=["OAuth"])
+@router.post("/consent")
 async def accept_consent(
     challenge: str = Form(...),
     grant_scope: List[str] = Form([]),

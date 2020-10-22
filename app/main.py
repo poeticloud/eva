@@ -12,7 +12,7 @@ from starlette.responses import JSONResponse
 from tortoise.contrib.fastapi import register_tortoise
 from tortoise.exceptions import DoesNotExist, IntegrityError
 
-from app.controllers import EvaException, hydra, identity
+from app.controllers import EvaException, hydra, identity, token, well_known
 from app.core import config
 
 logging.root.setLevel("INFO")
@@ -25,13 +25,18 @@ def create_app():
         servers=[{"url": "http://localhost:8000", "description": "Developing environment"}],
         default_response_class=JSONResponse,
     )
+    # add middlewares
     fast_app.add_middleware(
         CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
     )
     fast_app.add_middleware(ServerErrorMiddleware, debug=(config.settings.env == "local"))
     fast_app.add_middleware(GZipMiddleware)
-    fast_app.include_router(identity.router)
-    fast_app.include_router(hydra.router)
+
+    # add routers
+    fast_app.include_router(well_known.router, prefix="/.well-known")
+    fast_app.include_router(identity.router, prefix="/api")
+    fast_app.include_router(hydra.router, prefix="/hydra", tags=["Hydra"])
+    fast_app.include_router(token.router, prefix="/token", tags=["JSON Web Token"])
     return fast_app
 
 
@@ -40,7 +45,7 @@ app = create_app()
 
 @app.exception_handler(EvaException)
 async def eva_exception_handler(_: Request, exc: EvaException):
-    return JSONResponse(status_code=400, content={"message": exc.message})
+    return JSONResponse(status_code=exc.status_code, content={"message": exc.message})
 
 
 @app.exception_handler(DoesNotExist)
@@ -58,6 +63,6 @@ if config.settings.env != "local":  # pragma: no cover
         sentry_sdk.init(dsn=config.settings.sentry_dsn, environment=config.settings.env)
         app.add_middleware(SentryAsgiMiddleware)
 
-if sys.argv == ["manage.py", "runserver"] or sys.argv[0].endswith("gunicorn"):  # pragma: no cover
+if sys.argv[:2] == ["manage.py", "runserver"] or sys.argv[0].endswith("gunicorn"):  # pragma: no cover
     logging.info("connecting to database...")
     register_tortoise(app, config=config.db_config)
