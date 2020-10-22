@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Optional
 
 from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn
 from tortoise import generate_config
@@ -6,9 +7,9 @@ from tortoise import generate_config
 
 class Settings(BaseSettings):
     env: str = "local"
-    postgres_dsn: PostgresDsn = "postgres://eva:eva@localhost:15432/eva"
+    postgres_dsn: PostgresDsn = "postgres://postgres:eva@localhost:5432/eva"
     postgres_dsn_test: PostgresDsn = "postgres://eva:eva@localhost:15432/eva_{}"
-    sentry_dsn: AnyHttpUrl = "https://4a4fe3971a594a019b45da4b9ee49c65@sentry.poeticloud.com/5"
+    sentry_dsn: Optional[AnyHttpUrl] = None
 
     argon2_time_cost: int = 2
     argon2_memory_cost: int = 102400
@@ -26,11 +27,5 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-db_config = generate_config(
-    db_url=settings.postgres_dsn,
-    app_modules={"models": ["app.models", "aerich.models"]},
-)
-test_db_config = generate_config(
-    db_url=settings.postgres_dsn_test,
-    app_modules={"models": ["app.models"]},
-)
+db_config = generate_config(db_url=settings.postgres_dsn, app_modules={"models": ["app.models", "aerich.models"]})
+test_db_config = generate_config(db_url=settings.postgres_dsn_test, app_modules={"models": ["app.models"]})
