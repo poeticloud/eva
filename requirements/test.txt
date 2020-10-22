@@ -4,7 +4,7 @@
 #
 #    pip-compile --index-url=https://mirrors.aliyun.com/pypi/simple/ --no-emit-index-url --output-file=requirements/test.txt requirements/test.in
 #
-aerich==0.3.1             # via -r requirements/./production.in
+aerich==0.3.2             # via -r requirements/./production.in
 aiosqlite==0.15.0         # via tortoise-orm
 argon2-cffi==20.1.0       # via -r requirements/./production.in
 astroid==2.4.1            # via prospector, pylint, pylint-celery, pylint-flask, requirements-detector
@@ -26,7 +26,7 @@ httpcore==0.12.0          # via httpx
 httptools==0.1.1          # via uvicorn
 httpx==0.16.1             # via -r requirements/./production.in
 idna==2.10                # via requests, rfc3986
-iniconfig==1.0.1          # via pytest
+iniconfig==1.1.1          # via pytest
 iso8601==0.1.13           # via tortoise-orm
 isort==4.3.21             # via pylint
 jinja2==2.11.2            # via -r requirements/./production.in
@@ -59,7 +59,7 @@ pyyaml==5.3.1             # via prospector, uvicorn
 requests==2.24.0          # via -r requirements/./production.in
 requirements-detector==0.7  # via prospector
 rfc3986[idna2008]==1.4.0  # via httpx
-sentry-sdk==0.19.0        # via -r requirements/./production.in
+sentry-sdk==0.19.1        # via -r requirements/./production.in
 setoptconf==0.2.0         # via prospector
 six==1.15.0               # via argon2-cffi, astroid, packaging, python-multipart
 sniffio==1.2.0            # via httpcore, httpx
@@ -70,8 +70,8 @@ toml==0.10.1              # via coverage, pylint, pytest
 tortoise-orm==0.16.16     # via -r requirements/./production.in, aerich
 typer==0.3.2              # via -r requirements/./production.in
 typing-extensions==3.7.4.3  # via aiosqlite, tortoise-orm
-urllib3==1.25.10          # via requests, sentry-sdk
-uvicorn[standard]==0.12.1  # via -r requirements/./production.in
+urllib3==1.25.11          # via requests, sentry-sdk
+uvicorn[standard]==0.12.2  # via -r requirements/./production.in
 uvloop==0.14.0            # via uvicorn
 watchgod==0.6             # via uvicorn
 websockets==8.1           # via uvicorn
