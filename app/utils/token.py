@@ -3,7 +3,11 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional, Sequence, Union
 
 from authlib.jose import JsonWebKey, jwt
-from authlib.jose.errors import DecodeError
+from authlib.jose.errors import JoseError
+from fastapi import HTTPException
+from fastapi.security import HTTPBearer
+from starlette.requests import Request
+from starlette.status import HTTP_403_FORBIDDEN
 
 from app.controllers import EvaException
 from app.core.config import settings
@@ -93,5 +97,21 @@ class AuthJWT:
     def verify_token(self, encoded_token: str) -> Dict[str, Union[str, int, bool]]:
         try:
             return jwt.decode(encoded_token, key=self.private_key)
-        except DecodeError as err:
-            raise EvaException(status_code=403, message=str(err))
+        except JoseError as err:
+            raise EvaException(status_code=403, message=err.error)
+
+
+auth_jwt = AuthJWT()
+
+
+class TokenRequired(HTTPBearer):
+    def __init__(self, *, token_type: str = "access", **kwargs):
+        super().__init__(**kwargs)
+        self.token_type = token_type
+
+    async def __call__(self, request: Request) -> Dict[str, Union[str, int, bool]]:
+        token_pair = await super().__call__(request)
+        token = auth_jwt.verify_token(token_pair.credentials)
+        if not token["type"] == self.token_type:
+            raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="invalid token type")
+        return token

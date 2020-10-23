@@ -1,5 +1,4 @@
 import logging
-import sys
 
 import sentry_sdk
 from fastapi import FastAPI
@@ -63,6 +62,6 @@ if config.settings.env != "local":  # pragma: no cover
         sentry_sdk.init(dsn=config.settings.sentry_dsn, environment=config.settings.env)
         app.add_middleware(SentryAsgiMiddleware)
 
-if sys.argv[:2] == ["manage.py", "runserver"] or sys.argv[0].endswith("gunicorn"):  # pragma: no cover
+if config.settings.env != "test":  # pragma: no cover
     logging.info("connecting to database...")
     register_tortoise(app, config=config.db_config)

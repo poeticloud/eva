@@ -1,14 +1,16 @@
+from typing import Dict
+
 from fastapi import APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app import schemas
 from app.controllers import EvaException
-from app.models import Credential, Identity, Role
-from app.utils.token import AuthJWT
+from app.models import Credential, Identity
+from app.utils.token import TokenRequired, auth_jwt
 
 router = APIRouter()
 
-token_required = HTTPBearer(scheme_name="JWT")
+token_required = TokenRequired(scheme_name="JWT")
+refresh_token_required = TokenRequired(scheme_name="JWT", token_type="refresh")
 
 
 @router.post("/obtain", response_model=schemas.AccessToken)
@@ -26,10 +28,7 @@ async def obtain_jwt_token(body: schemas.TokenObtain):
 
     await credential.fetch_related("identity")
     identity: Identity = credential.identity
-    roles = await identity.roles.all().values_list("code", flat=True)
-    uuid = str(identity.uuid)
-    claims = {"sub": uuid, "roles": roles}
-    auth_jwt = AuthJWT()
+    claims = {"sub": str(identity.uuid), "roles": await identity.roles.all().values_list("code", flat=True)}
     return schemas.AccessToken(
         access_token=auth_jwt.create_access_token(custom_claims=claims),
         refresh_token=auth_jwt.create_refresh_token(custom_claims=claims),
@@ -37,12 +36,12 @@ async def obtain_jwt_token(body: schemas.TokenObtain):
 
 
 @router.post("/refresh", response_model=schemas.RefreshToken)
-async def refresh_jwt_token(token: HTTPAuthorizationCredentials = Depends(token_required)):
-    auth_jwt = AuthJWT()
-    token = auth_jwt.verify_token(token.credentials)
+async def refresh_jwt_token(token: Dict = Depends(refresh_token_required)):
     uuid = token["sub"]
-    roles = await Role.filter(identities__uuid=uuid).values_list("code", flat=True)
-    claims = {"sub": uuid, "roles": roles}
+    identity = await Identity.get(uuid=uuid)
+    if not identity or not identity.is_active:
+        raise EvaException(message="invalid identity")
+    claims = {"sub": uuid, "roles": await identity.roles.all().values_list("code", flat=True)}
     return schemas.RefreshToken(
-        refresh_token=auth_jwt.create_refresh_token(custom_claims=claims),
+        access_token=auth_jwt.create_access_token(custom_claims=claims),
     )

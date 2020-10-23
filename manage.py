@@ -1,4 +1,5 @@
 import asyncio
+import os
 import subprocess
 
 import typer
@@ -50,7 +51,7 @@ def update_dep():
 
 @cmd.command(help="test")
 def test():
-    subprocess.call(["pytest", "--disable-warnings", "-v", "--cov=./", "--cov-report=xml"])
+    subprocess.call(args=["pytest"], env={"ENV": "test", **os.environ})
     subprocess.call(["coverage", "html"])
 
 

@@ -132,4 +132,4 @@ class AccessToken(Schema):
 
 
 class RefreshToken(Schema):
-    refresh_token: str
+    access_token: str

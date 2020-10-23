@@ -16,37 +16,37 @@ async def get_role(code):
 def test_permission_curd(client):
     """测试权限Permission的增删改查操作"""
     resp = client.post(
-        "/permission", json={"code": "fake_code", "name": "fake_name", "description": "fake description"}
+        "/api/permission", json={"code": "fake_code", "name": "fake_name", "description": "fake description"}
     )
     assert resp.status_code == 200, resp.text
     resp = client.post(
-        "/permission", json={"code": "fake_code", "name": "fake_name", "description": "fake description"}
+        "/api/permission", json={"code": "fake_code", "name": "fake_name", "description": "fake description"}
     )
     assert resp.status_code == 400, resp.text
     assert resp.json()["message"] == "provided permission code already exists"
-    resp = client.get("/permission")
+    resp = client.get("/api/permission")
     assert len(resp.json()["results"]) == 1
     obj = resp.json()["results"][0]
     assert obj["code"] == "fake_code"
     assert obj["name"] == "fake_name"
 
-    resp = client.get("/permission/fake_code")
+    resp = client.get("/api/permission/fake_code")
     assert resp.status_code == 200, resp.text
     obj = resp.json()
     assert obj["code"] == "fake_code"
     assert obj["name"] == "fake_name"
     assert obj["description"] == "fake description"
 
-    resp = client.delete("/permission/fake_code")
+    resp = client.delete("/api/permission/fake_code")
     assert resp.status_code == 200, resp.text
 
-    resp = client.get("/permission/fake_code")
+    resp = client.get("/api/permission/fake_code")
     assert resp.status_code == 404, resp.text
 
 
 def test_update_permission(client, event_loop):
     event_loop.run_until_complete(create_permissions(["fake_code"]))
-    resp = client.patch("/permission/fake_code", json={"name": "code_fake", "description": "blabla"})
+    resp = client.patch("/api/permission/fake_code", json={"name": "code_fake", "description": "blabla"})
     assert resp.status_code == 200, resp.text
 
     async def get_permission(code):
@@ -58,9 +58,9 @@ def test_update_permission(client, event_loop):
 
 
 def test_roles(client, event_loop):
-    resp = client.post("/role", json={"code": "fake_code", "name": "fake_name", "description": "fake description"})
+    resp = client.post("/api/role", json={"code": "fake_code", "name": "fake_name", "description": "fake description"})
     assert resp.status_code == 200, resp.text
-    resp = client.post("/role", json={"code": "fake_code", "name": "fake_name", "description": "fake description"})
+    resp = client.post("/api/role", json={"code": "fake_code", "name": "fake_name", "description": "fake description"})
     assert resp.status_code == 400, resp.text
     assert resp.json()["message"] == "provided role code already exists"
 
@@ -71,7 +71,7 @@ def test_roles(client, event_loop):
 
     event_loop.run_until_complete(create_permissions(["code1", "code2"]))
     resp = client.post(
-        "/role",
+        "/api/role",
         json={
             "code": "fake_code2",
             "name": "fake_name2",
@@ -81,7 +81,7 @@ def test_roles(client, event_loop):
     )
     assert resp.status_code == 200, resp.text
 
-    resp = client.get("/role/fake_code2")
+    resp = client.get("/api/role/fake_code2")
     assert resp.status_code == 200, resp.text
     resp = resp.json()
     assert resp["code"] == "fake_code2"
@@ -89,10 +89,10 @@ def test_roles(client, event_loop):
     assert resp["description"] == "fake description2"
     assert resp["permission_codes"] == ["code1", "code2"]
 
-    resp = client.get("/role")
+    resp = client.get("/api/role")
     assert len(resp.json()["results"]) == 2
 
-    resp = client.delete("/role/fake_code")
+    resp = client.delete("/api/role/fake_code")
     assert resp.status_code == 200
 
     role = event_loop.run_until_complete(get_role("fake_code"))
@@ -104,7 +104,7 @@ def test_roles(client, event_loop):
 def test_update_role(client, event_loop):
     event_loop.run_until_complete(create_permissions(["code1", "code2"]))
     client.post(
-        "/role",
+        "/api/role",
         json={
             "code": "fake_code",
             "name": "fake_name",
@@ -114,7 +114,7 @@ def test_update_role(client, event_loop):
     )
 
     resp = client.patch(
-        "/role/fake_code",
+        "/api/role/fake_code",
         json={
             "name": "fake_name2",
             "description": "fake description2",
@@ -123,7 +123,7 @@ def test_update_role(client, event_loop):
     )
     assert resp.status_code == 200, resp.text
 
-    resp = client.get("/role/fake_code")
+    resp = client.get("/api/role/fake_code")
     assert resp.status_code == 200, resp.text
     resp = resp.json()
     assert resp["name"] == "fake_name2"
@@ -133,7 +133,7 @@ def test_update_role(client, event_loop):
 
 def test_identity(client):
     client.post(
-        "/role",
+        "/api/role",
         json={
             "code": "fake_code",
             "name": "fake_name",
@@ -142,7 +142,7 @@ def test_identity(client):
     )
 
     resp = client.post(
-        "/identity",
+        "/api/identity",
         json={
             "role_codes": ["fake_code"],
             "is_active": True,
@@ -157,7 +157,7 @@ def test_identity(client):
     )
     assert resp.status_code == 200, resp.text
     resp = client.post(
-        "/identity",
+        "/api/identity",
         json={
             "role_codes": ["not_exist"],
             "is_active": True,
@@ -172,12 +172,12 @@ def test_identity(client):
     )
     assert resp.status_code == 400, resp.text
 
-    resp = client.get("/identity")
+    resp = client.get("/api/identity")
     assert resp.status_code == 200, resp.text
     assert len(resp.json()["results"]) == 1
 
     uid = resp.json()["results"][0]["uuid"]
-    resp = client.get(f"/identity/{uid}")
+    resp = client.get(f"/api/identity/{uid}")
     assert resp.status_code == 200, resp.text
     resp = resp.json()
     assert resp["credentials"] == [{"identifier": "test@123.com", "identifier_type": "EMAIL"}]
@@ -185,7 +185,7 @@ def test_identity(client):
     assert resp["roles"] == [{"code": "fake_code", "name": "fake_name"}]
 
     resp = client.patch(
-        f"/identity/{uid}",
+        f"/api/identity/{uid}",
         json={
             "is_active": False,
             "credentials": [
@@ -204,9 +204,9 @@ def test_identity(client):
     assert resp["credentials"] == [{"identifier": "test", "identifier_type": "USERNAME"}]
     assert resp["roles"] == []
 
-    resp = client.delete(f"/identity/{uid}")
+    resp = client.delete(f"/api/identity/{uid}")
     assert resp.status_code == 200, resp.text
-    resp = client.get(f"/identity/{uid}")
+    resp = client.get(f"/api/identity/{uid}")
     assert resp.status_code == 404, resp.text
 
 
