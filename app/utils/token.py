@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Dict, Optional, Sequence, Union
 
 from authlib.jose import JsonWebKey, jwt
@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from fastapi.security import HTTPBearer
 from starlette.requests import Request
 from starlette.status import HTTP_403_FORBIDDEN
+from tortoise import timezone
 
 from app.controllers import EvaException
 from app.core.config import settings
@@ -34,8 +35,8 @@ class AuthJWT:
 
         # Data section
         claims = {
-            "iat": datetime.now(timezone.utc),
-            "nbf": datetime.now(timezone.utc),
+            "iat": timezone.now(),
+            "nbf": timezone.now(),
             "jti": str(uuid.uuid4()),
             "type": type_token,
             **custom_claims,
@@ -53,22 +54,32 @@ class AuthJWT:
         return jwt.encode(header=headers, payload=claims, key=key)
 
     @staticmethod
-    def _get_expired_time(type_token: str, expires_time: Optional[Union[timedelta, bool]] = None) -> Optional[datetime]:
+    def _get_expired_time(
+        type_token: str, identifier_type=None, expires_time: Optional[Union[timedelta, bool]] = None
+    ) -> Optional[datetime]:
+        """
+        如果设置为False，则永不过期
+        如果没设置或者设置为True，则设置为默认值
+        如果特殊设置了expires_time, 则设置为对应的expires_time
+        """
+
         if expires_time is False:
             return None
-
-        if type_token == "access":
-            if expires_time is True:
-                expires_time = settings.jwt_access_token_expires
+        if expires_time is True or expires_time is None:
+            if identifier_type == "APP_KEY":
+                ret = settings.jwt_access_token_expires_app_key
             else:
-                expires_time = expires_time or settings.jwt_access_token_expires
-        if type_token == "refresh":
-            if expires_time is True:
-                expires_time = settings.jwt_refresh_token_expires
-            else:
-                expires_time = expires_time or settings.jwt_refresh_token_expires
+                if type_token == "access":
+                    ret = settings.jwt_access_token_expires
+                elif type_token == "refresh":
+                    ret = settings.jwt_refresh_token_expires
+                else:
+                    raise NotImplementedError
 
-        return datetime.now(timezone.utc) + expires_time
+        else:
+            ret = expires_time
+
+        return timezone.now() + ret
 
     def create_access_token(
         self,
@@ -78,7 +89,7 @@ class AuthJWT:
     ) -> str:
         return self._create_token(
             type_token="access",
-            exp_time=self._get_expired_time("access", expires_time),
+            exp_time=self._get_expired_time("access", custom_claims["identifier_type"], expires_time),
             custom_claims=custom_claims,
         )
 
@@ -90,7 +101,7 @@ class AuthJWT:
     ) -> str:
         return self._create_token(
             type_token="refresh",
-            exp_time=self._get_expired_time("refresh", expires_time),
+            exp_time=self._get_expired_time("refresh", custom_claims["identifier_type"], expires_time),
             custom_claims=custom_claims,
         )
 

@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     jwt_audience: Optional[List[str]]
     jwt_issuer: Optional[str]
     jwt_access_token_expires: Union[bool, timedelta] = timedelta(hours=2)
+
+    jwt_access_token_expires_app_key: Union[bool, timedelta] = timedelta(days=365)
+
     jwt_refresh_token_expires: Union[bool, timedelta] = timedelta(days=7)
     jwt_private_key: SecretStr = RSAKey.generate_key(is_private=True).as_pem(is_private=True)
 

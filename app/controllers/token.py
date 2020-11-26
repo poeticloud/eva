@@ -28,7 +28,11 @@ async def obtain_jwt_token(body: schemas.TokenObtain):
 
     await credential.fetch_related("identity")
     identity: Identity = credential.identity
-    claims = {"sub": str(identity.uuid), "roles": await identity.roles.all().values_list("code", flat=True)}
+    claims = {
+        "sub": str(identity.uuid),
+        "roles": await identity.roles.all().values_list("code", flat=True),
+        "identifier_type": credential.identifier_type.name,
+    }
     return schemas.AccessToken(
         access_token=auth_jwt.create_access_token(custom_claims=claims),
         refresh_token=auth_jwt.create_refresh_token(custom_claims=claims),
@@ -41,7 +45,11 @@ async def refresh_jwt_token(token: Dict = Depends(refresh_token_required)):
     identity = await Identity.get(uuid=uuid)
     if not identity or not identity.is_active:
         raise EvaException(message="invalid identity")
-    claims = {"sub": uuid, "roles": await identity.roles.all().values_list("code", flat=True)}
+    claims = {
+        "sub": uuid,
+        "roles": await identity.roles.all().values_list("code", flat=True),
+        "identifier_type": token["identifier_type"],
+    }
     return schemas.RefreshToken(
         access_token=auth_jwt.create_access_token(custom_claims=claims),
     )
