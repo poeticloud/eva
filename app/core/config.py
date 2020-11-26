@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     jwt_refresh_token_expires: Union[bool, timedelta] = timedelta(days=7)
     jwt_private_key: SecretStr = RSAKey.generate_key(is_private=True).as_pem(is_private=True)
 
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
 
 settings = Settings()
 

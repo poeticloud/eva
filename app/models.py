@@ -82,6 +82,7 @@ class Credential(TimestampModelMixin, models.Model):
 
     @enum.unique
     class IdentifierType(enum.Enum):
+        APP_KEY = "APP_KEY"
         USERNAME = "USERNAME"
         EMAIL = "EMAIL"
         PHONE = "PHONE"

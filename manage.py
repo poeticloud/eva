@@ -1,4 +1,5 @@
 import asyncio
+import multiprocessing
 import os
 import subprocess
 
@@ -13,8 +14,13 @@ cmd = typer.Typer()
 
 
 @cmd.command(help="run develop server using uvicorn")
-def runserver(host: str = "127.0.0.1", port: int = 8000, reload: bool = True):
-    uvicorn.run("app.main:app", reload=reload, host=host, port=port)
+def runserver(
+    host: str = typer.Argument("127.0.0.1"),
+    port: int = typer.Argument(8000),
+    reload: bool = True,
+    workers: int = multiprocessing.cpu_count(),
+):
+    uvicorn.run("app.main:app", reload=reload, host=host, port=port, workers=workers)
 
 
 @cmd.command(help="generate migration files")
