@@ -18,7 +18,7 @@ COPY scripts /scripts
 RUN chmod +x /scripts/*
 
 COPY app /work/app
-COPY aerich.ini /work/
+COPY manage.py aerich.ini /work/
 
 WORKDIR /work
 
