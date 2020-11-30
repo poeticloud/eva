@@ -2,13 +2,14 @@ import asyncio
 import multiprocessing
 import os
 import subprocess
+from typing import List, Optional
 
 import typer
 import uvicorn
 from tortoise import Tortoise, transactions
 
 from app.core import config
-from app.models import Credential, Identity, Password
+from app.models import Credential, Identity, Password, Role
 
 cmd = typer.Typer()
 
@@ -67,7 +68,9 @@ def lint():
 
 
 @cmd.command(help="create identity")
-def create_identity(identifier_type: Credential.IdentifierType, identifier: str, password: str):
+def create_identity(
+    identifier_type: Credential.IdentifierType, identifier: str, password: str, role_codes: Optional[List[str]]
+):
     async def do():
         await Tortoise.init(config=config.db_config)
         async with transactions.in_transaction() as tx:
@@ -81,6 +84,38 @@ def create_identity(identifier_type: Credential.IdentifierType, identifier: str,
             await credential.save()
             await Password.from_raw(credential=credential, raw_password=password).save()
             typer.secho(f"identity create successfully!\nuuid: {identity.uuid}", fg=typer.colors.GREEN)
+            if role_codes:
+                roles = await Role.filter(code__in=role_codes)
+                await identity.roles.add(*roles)
+                typer.secho(f"identity roles add successfully!\nroles: {roles}", fg=typer.colors.GREEN)
+
+    asyncio.get_event_loop().run_until_complete(do())
+
+
+@cmd.command(help="create role")
+def create_role(role_code: str, role_name: str):
+    async def do():
+        await Tortoise.init(config=config.db_config)
+        if await Role.filter(code=role_code).exists():
+            return typer.secho("provided role_code already exists", fg=typer.colors.RED)
+        new_role = Role(code=role_code, name=role_name)
+        await new_role.save()
+        typer.secho(
+            f"role create successfully!\nuuid: {new_role.uuid}\ncode: {new_role.code}\nname: {new_role.name}",
+            fg=typer.colors.GREEN,
+        )
+
+    asyncio.get_event_loop().run_until_complete(do())
+
+
+@cmd.command(help="create role")
+def identity_add_roles(identity_id: str, role_codes: List[str]):
+    async def do():
+        await Tortoise.init(config=config.db_config)
+        identity = await Identity.get(id=identity_id)
+        roles = await Role.filter(code__in=role_codes)
+        await identity.roles.add(*roles)
+        typer.secho(f"identity role add successfully!\nroles: {roles}", fg=typer.colors.GREEN)
 
     asyncio.get_event_loop().run_until_complete(do())
 
