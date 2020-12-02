@@ -18,7 +18,7 @@ async def obtain_jwt_token(body: schemas.TokenObtain):
     credential = await Credential.filter(identifier_type=body.identifier_type, identifier=body.identifier).first()
     if not credential:
         raise EvaException(message="The credential is not correct")
-    succeed = True
+    succeed = False
     async for pwd in credential.passwords:
         if pwd.validate_password(body.password):
             succeed = True
