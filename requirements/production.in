@@ -18,6 +18,7 @@ authlib
 asyncpg            # https://github.com/MagicStack/asyncpg
 tortoise-orm       # https://github.com/tortoise/tortoise-orm
 aerich             # https://github.com/long2ice/aerich
+aiomysql     # waiting for aerich 0.4.4 release...
 
 # Sentry
 # ------------------------------------------------------------------------------
