@@ -22,6 +22,4 @@ COPY manage.py aerich.ini /work/
 
 WORKDIR /work
 
-ENTRYPOINT ["/scripts/entrypoint.sh"]
-
 CMD ["/scripts/start-production.sh"]
