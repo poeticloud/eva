@@ -3,7 +3,7 @@ from typing import Generic, List, Type, TypeVar
 
 from fastapi import Query
 from pydantic.generics import GenericModel
-from tortoise import QuerySet
+from tortoise.queryset import QuerySet
 
 from app.schemas import Schema
 
