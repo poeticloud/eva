@@ -5,17 +5,17 @@
 #    pip-compile --index-url=https://mirrors.aliyun.com/pypi/simple/ --no-emit-index-url --output-file=requirements/production.txt requirements/production.in
 #
 aerich==0.4.3
-    # via -r requirements/production.in
+    # via -r production.in
 aiomysql==0.0.21
-    # via -r requirements/production.in
+    # via -r production.in
 aiosqlite==0.16.0
     # via tortoise-orm
 argon2-cffi==20.1.0
-    # via -r requirements/production.in
+    # via -r production.in
 asyncpg==0.21.0
-    # via -r requirements/production.in
+    # via -r production.in
 authlib==0.15.2
-    # via -r requirements/production.in
+    # via -r production.in
 certifi==2020.12.5
     # via
     #   httpx
@@ -37,9 +37,9 @@ cryptography==3.3.1
 ddlparse==1.9.0
     # via aerich
 fastapi==0.63.0
-    # via -r requirements/production.in
+    # via -r production.in
 gunicorn==20.0.4
-    # via -r requirements/production.in
+    # via -r production.in
 h11==0.12.0
     # via
     #   httpcore
@@ -49,7 +49,7 @@ httpcore==0.12.2
 httptools==0.1.1
     # via uvicorn
 httpx==0.16.1
-    # via -r requirements/production.in
+    # via -r production.in
 idna==2.10
     # via
     #   requests
@@ -57,14 +57,14 @@ idna==2.10
 iso8601==0.1.13
     # via tortoise-orm
 jinja2==2.11.2
-    # via -r requirements/production.in
+    # via -r production.in
 markupsafe==1.1.1
     # via jinja2
 pycparser==2.20
     # via cffi
 pydantic==1.7.3
     # via
-    #   -r requirements/production.in
+    #   -r production.in
     #   aerich
     #   fastapi
 pymysql==0.9.3
@@ -76,17 +76,17 @@ pypika==0.44.1
 python-dotenv==0.15.0
     # via uvicorn
 python-multipart==0.0.5
-    # via -r requirements/production.in
+    # via -r production.in
 pytz==2020.5
     # via tortoise-orm
-pyyaml==5.3.1
+pyyaml==5.4
     # via uvicorn
 requests==2.25.1
-    # via -r requirements/production.in
+    # via -r production.in
 rfc3986[idna2008]==1.4.0
     # via httpx
 sentry-sdk==0.19.5
-    # via -r requirements/production.in
+    # via -r production.in
 six==1.15.0
     # via
     #   argon2-cffi
@@ -100,10 +100,10 @@ starlette==0.13.6
     # via fastapi
 tortoise-orm==0.16.19
     # via
-    #   -r requirements/production.in
+    #   -r production.in
     #   aerich
 typer==0.3.2
-    # via -r requirements/production.in
+    # via -r production.in
 typing-extensions==3.7.4.3
     # via aiosqlite
 urllib3==1.26.2
@@ -111,7 +111,7 @@ urllib3==1.26.2
     #   requests
     #   sentry-sdk
 uvicorn[standard]==0.13.3
-    # via -r requirements/production.in
+    # via -r production.in
 uvloop==0.14.0
     # via uvicorn
 watchgod==0.6
